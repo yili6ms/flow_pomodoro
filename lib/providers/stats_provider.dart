@@ -1,53 +1,38 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../models/session.dart';
 
+import '../models/session.dart';
+import '../services/session_store.dart';
+
+/// Front-loads the entire session history from a [SessionStore] into an
+/// in-memory list and exposes the aggregations the UI needs. Recording a
+/// new session writes-through to the store so the cache and disk stay in
+/// sync.
 class StatsProvider extends ChangeNotifier {
-  static const _kSessions = 'stats.sessions';
+  final SessionStore store;
   final List<FocusSession> _sessions = [];
-  late SharedPreferences _prefs;
+
+  StatsProvider({required this.store});
 
   List<FocusSession> get sessions => List.unmodifiable(_sessions);
 
   Future<void> load() async {
-    _prefs = await SharedPreferences.getInstance();
-    final raw = _prefs.getString(_kSessions);
-    _sessions.clear();
-    if (raw != null && raw.isNotEmpty) {
-      try {
-        final decoded = jsonDecode(raw);
-        if (decoded is List) {
-          for (final item in decoded) {
-            if (item is Map<String, dynamic>) {
-              try {
-                _sessions.add(FocusSession.fromJson(item));
-              } catch (e) {
-                debugPrint('StatsProvider: skipping corrupt session: $e');
-              }
-            }
-          }
-        }
-      } catch (e) {
-        debugPrint('StatsProvider: failed to decode sessions, resetting: $e');
-        await _prefs.remove(_kSessions);
-      }
-    }
+    await store.init();
+    final loaded = await store.loadAll();
+    _sessions
+      ..clear()
+      ..addAll(loaded);
     notifyListeners();
   }
 
-  Future<void> _save() async {
-    final raw = jsonEncode(_sessions.map((s) => s.toJson()).toList());
-    await _prefs.setString(_kSessions, raw);
+  Future<void> recordSession(FocusSession session) async {
+    await store.insert(session);
+    _sessions.insert(0, session);
+    notifyListeners();
   }
 
-  Future<void> recordSession(FocusSession session) async {
-    _sessions.insert(0, session);
-    // Keep last 1000 sessions to bound storage.
-    if (_sessions.length > 1000) {
-      _sessions.removeRange(1000, _sessions.length);
-    }
-    await _save();
+  Future<void> clearAll() async {
+    await store.deleteAll();
+    _sessions.clear();
     notifyListeners();
   }
 

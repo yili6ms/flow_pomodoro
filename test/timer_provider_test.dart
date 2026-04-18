@@ -5,6 +5,7 @@ import 'package:flow_pomodoro/providers/settings_provider.dart';
 import 'package:flow_pomodoro/providers/stats_provider.dart';
 import 'package:flow_pomodoro/providers/task_provider.dart';
 import 'package:flow_pomodoro/providers/timer_provider.dart';
+import 'package:flow_pomodoro/services/in_memory_session_store.dart';
 
 Future<TimerProvider> _newTimer({bool autoSwitch = false}) async {
   SharedPreferences.setMockInitialValues({});
@@ -18,7 +19,7 @@ Future<TimerProvider> _newTimer({bool autoSwitch = false}) async {
   await s.setHaptics(false); // avoid platform haptic calls in tests
   final t = TaskProvider();
   await t.load();
-  final st = StatsProvider();
+  final st = StatsProvider(store: InMemorySessionStore());
   await st.load();
   return TimerProvider(settings: s, tasks: t, stats: st);
 }

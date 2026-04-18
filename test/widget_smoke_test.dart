@@ -11,12 +11,13 @@ import 'package:flow_pomodoro/providers/timer_provider.dart';
 import 'package:flow_pomodoro/screens/focus_intent_screen.dart';
 import 'package:flow_pomodoro/screens/home_screen.dart';
 import 'package:flow_pomodoro/screens/welcome_screen.dart';
+import 'package:flow_pomodoro/services/in_memory_session_store.dart';
 
 Future<FlowPomodoroApp> _buildApp({required bool onboarded}) async {
   SharedPreferences.setMockInitialValues({});
   final settings = SettingsProvider();
   final tasks = TaskProvider();
-  final stats = StatsProvider();
+  final stats = StatsProvider(store: InMemorySessionStore());
   await settings.load();
   await tasks.load();
   await stats.load();

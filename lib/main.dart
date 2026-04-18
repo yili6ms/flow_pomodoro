@@ -11,6 +11,7 @@ import 'providers/timer_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/welcome_screen.dart';
+import 'services/session_store_init.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
@@ -18,7 +19,8 @@ Future<void> main() async {
 
   final settings = SettingsProvider();
   final tasks = TaskProvider();
-  final stats = StatsProvider();
+  final sessionStore = await initSessionStore();
+  final stats = StatsProvider(store: sessionStore);
   await Future.wait([settings.load(), tasks.load(), stats.load()]);
 
   final timer = TimerProvider(settings: settings, tasks: tasks, stats: stats);

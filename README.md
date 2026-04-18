@@ -89,7 +89,7 @@ GitHub Actions runs on every push and PR to `master`/`main`:
 | **Build Windows**  | `windows-latest` | zipped `flow_pomodoro.exe` bundle |
 | **Build Linux**    | `ubuntu-latest` | `flow_pomodoro-linux-x64.tar.gz` |
 
-On a tag push (e.g. `0.0.5`) the **Release** job additionally:
+On a tag push (e.g. `0.0.6`) the **Release** job additionally:
 1. Downloads all built artifacts
 2. Renames them with the tag (`flow_pomodoro-<tag>.apk`, `…-windows.zip`, `…-linux-x64.tar.gz`)
 3. Publishes a GitHub Release with auto-generated notes and the binaries attached as Release assets

@@ -5,6 +5,32 @@ Tags follow `MAJOR.MINOR.PATCH` (no `v` prefix). Each release also has signed bi
 
 ---
 
+## 0.0.6 — 2026-04-18
+
+A foundational release: focus session history now lives in **SQLite** behind a clean storage abstraction, so future features (tags, search, sync, longer history) won't be bottlenecked by JSON-in-SharedPreferences.
+
+### ✨ New
+- **`SessionStore` abstraction.** A small interface (`init / loadAll / insert / deleteAll / close`) sits between `StatsProvider` and the disk. Production uses `SqliteSessionStore`; tests use `InMemorySessionStore`.
+- **SQLite-backed history.** Sessions persist to `flow_pomodoro.db` in the app's documents directory. Schema v1 stores timestamps as epoch milliseconds with an index on `started_at_ms` for fast newest-first reads.
+- **No more 1 000-session cap.** The old SharedPreferences blob capped history at the most recent 1 000 sessions to keep the JSON small. SQLite has no such limit — your full focus history is now retained.
+- **Automatic one-time migration.** On first launch of 0.0.6, any sessions in the legacy `stats.sessions` SharedPreferences key are copied into SQLite and the old key is cleared. Migration is idempotent and tolerant of corrupt rows.
+
+### 🧪 Quality
+- Two new test files: `session_store_test.dart` (12 tests covering both in-memory and SQLite implementations, including round-trip fidelity and persistence across reopen) and `legacy_prefs_session_store_test.dart` (6 tests covering the migration source).
+- The `StatsProvider` test suite now drives an `InMemorySessionStore` instead of mocking SharedPreferences directly.
+- Test count: **58 passing** (up from 43).
+
+### 🛠️ Internal
+- New deps: `sqflite ^2.4.0`, `sqflite_common_ffi ^2.3.4` (for desktop + tests), `path ^1.9.0`, `path_provider ^2.1.5`.
+- Desktop platforms (Windows/Linux) initialize `databaseFactoryFfi`; mobile uses the default sqflite plugin.
+
+### 📥 Downloads
+Grab the binaries from the [GitHub Release page](https://github.com/yili6ms/flow_pomodoro/releases/tag/0.0.6).
+
+Full changelog: [`0.0.5...0.0.6`](https://github.com/yili6ms/flow_pomodoro/compare/0.0.5...0.0.6)
+
+---
+
 ## 0.0.5 — 2026-04-18
 
 A small release with one big visual change and a repo-hygiene cleanup.

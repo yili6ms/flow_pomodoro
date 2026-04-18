@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flow_pomodoro/providers/settings_provider.dart';
 import 'package:flow_pomodoro/providers/task_provider.dart';
 import 'package:flow_pomodoro/providers/stats_provider.dart';
+import 'package:flow_pomodoro/services/in_memory_session_store.dart';
 import 'package:flow_pomodoro/models/session.dart';
 import 'package:flow_pomodoro/models/white_noise.dart';
 import 'package:flutter/material.dart';
@@ -208,6 +209,14 @@ void main() {
   });
 
   group('StatsProvider', () {
+    late InMemorySessionStore store;
+
+    setUp(() {
+      store = InMemorySessionStore();
+    });
+
+    StatsProvider newProvider() => StatsProvider(store: store);
+
     FocusSession make({
       required DateTime start,
       int duration = 1500,
@@ -226,7 +235,7 @@ void main() {
     }
 
     test('aggregates totals (only completed)', () async {
-      final s = StatsProvider();
+      final s = newProvider();
       await s.load();
       await s.recordSession(make(start: DateTime.now(), duration: 1500));
       await s.recordSession(make(start: DateTime.now(), duration: 600));
@@ -239,7 +248,7 @@ void main() {
     });
 
     test('focusSecondsForDay only counts that day', () async {
-      final s = StatsProvider();
+      final s = newProvider();
       await s.load();
       final today = DateTime.now();
       final yesterday = today.subtract(const Duration(days: 1));
@@ -250,7 +259,7 @@ void main() {
     });
 
     test('last7DaysMinutes returns 7 entries with today last', () async {
-      final s = StatsProvider();
+      final s = newProvider();
       await s.load();
       await s.recordSession(make(start: DateTime.now(), duration: 1800));
       final week = s.last7DaysMinutes();
@@ -259,7 +268,7 @@ void main() {
     });
 
     test('focusDistributionByTime buckets by hour-of-day', () async {
-      final s = StatsProvider();
+      final s = newProvider();
       await s.load();
       // morning (8am)
       await s.recordSession(
@@ -277,38 +286,24 @@ void main() {
       expect(dist, [600, 1200, 300, 900]);
     });
 
-    test('persists sessions across reload', () async {
-      final s1 = StatsProvider();
+    test('reloads sessions from the same store', () async {
+      final s1 = newProvider();
       await s1.load();
       await s1.recordSession(make(start: DateTime.now(), duration: 1500));
-      final s2 = StatsProvider();
+      final s2 = newProvider();
       await s2.load();
       expect(s2.sessions.length, 1);
       expect(s2.totalFocusSeconds, 1500);
     });
 
-    test('survives malformed JSON in storage', () async {
-      SharedPreferences.setMockInitialValues({
-        'stats.sessions': '###not-json###',
-      });
-      final s = StatsProvider();
+    test('clearAll empties cache and store', () async {
+      final s = newProvider();
       await s.load();
+      await s.recordSession(make(start: DateTime.now(), duration: 600));
+      expect(s.sessions, hasLength(1));
+      await s.clearAll();
       expect(s.sessions, isEmpty);
-      // Still functional after recovery.
-      await s.recordSession(make(start: DateTime.now()));
-      expect(s.sessions.length, 1);
-    });
-
-    test('skips sessions with invalid date strings', () async {
-      SharedPreferences.setMockInitialValues({
-        'stats.sessions':
-            '[{"id":"a","taskId":null,"taskTitle":null,"intent":null,"startedAt":"not-a-date","endedAt":"also-not","durationSeconds":600,"completed":true}]',
-      });
-      final s = StatsProvider();
-      await s.load();
-      // The session is loaded with fallback DateTime.now() rather than crashing.
-      expect(s.sessions.length, 1);
-      expect(s.sessions.first.durationSeconds, 600);
+      expect(await store.loadAll(), isEmpty);
     });
   });
 }
