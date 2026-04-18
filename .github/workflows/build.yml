@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches: [main, master]
-    tags: ['v*']
+    tags: ['v*', '[0-9]*']
   pull_request:
     branches: [main, master]
   workflow_dispatch:
@@ -165,7 +165,7 @@ jobs:
   # ---------------------------------------------------------------------------
   release:
     name: Release
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/')
     needs: [build-android, build-windows, build-linux]
     runs-on: ubuntu-latest
     permissions:

@@ -21,6 +21,9 @@ void main() {
   _writeWav('${outDir.path}/pink.wav', _pinkNoise());
   _writeWav('${outDir.path}/brown.wav', _brownNoise());
   _writeWav('${outDir.path}/rain.wav', _rainNoise());
+  _writeWav('${outDir.path}/campfire.wav', _campfireNoise());
+  _writeWav('${outDir.path}/river.wav', _riverNoise());
+  _writeWav('${outDir.path}/ocean.wav', _oceanNoise());
   print('Generated noise assets in ${outDir.path}');
 }
 
@@ -135,6 +138,168 @@ Float32List _rainNoise() {
   }
   _seamlessLoop(out);
   return out;
+}
+
+/// Campfire: deep low-frequency rumble (heavily filtered brown) plus
+/// random sharp crackle/pop transients.
+Float32List _campfireNoise() {
+  final rng = math.Random(0xF14E);
+  final out = Float32List(_totalSamples);
+
+  // Slow rumble: heavily smoothed brown noise
+  double brown = 0;
+  double y = 0;
+  for (int i = 0; i < out.length; i++) {
+    final w = rng.nextDouble() * 2 - 1;
+    brown = (brown + w * 0.04) * 0.992;
+    // Two-pole low pass for warm rumble
+    y += 0.06 * (brown - y);
+    out[i] = y * 4.5;
+  }
+
+  // Sparse crackles: short bursts of high-freq decaying noise
+  final crackleCount = (durationSeconds * 14).round();
+  for (int c = 0; c < crackleCount; c++) {
+    final pos = rng.nextInt(out.length - 400);
+    final amp = 0.15 + rng.nextDouble() * 0.35;
+    final decay = 30 + rng.nextInt(180);
+    for (int k = 0; k < decay && pos + k < out.length; k++) {
+      final env = math.exp(-k / (decay * 0.25));
+      // High-frequency content (random + slight tone)
+      final hf = (rng.nextDouble() * 2 - 1) * 0.7 +
+          math.sin(k * (1.4 + rng.nextDouble() * 0.8)) * 0.3;
+      out[pos + k] += amp * env * hf;
+    }
+  }
+
+  // Occasional larger pops
+  final popCount = (durationSeconds * 1.5).round();
+  for (int p = 0; p < popCount; p++) {
+    final pos = rng.nextInt(out.length - 80);
+    final amp = 0.4 + rng.nextDouble() * 0.4;
+    for (int k = 0; k < 80 && pos + k < out.length; k++) {
+      final env = math.exp(-k / 18.0);
+      out[pos + k] += amp * env * (rng.nextDouble() * 2 - 1);
+    }
+  }
+
+  _normalizeTo(out, 0.92);
+  _seamlessLoop(out);
+  return out;
+}
+
+/// River: continuous fast-flowing water — filtered pink noise with subtle
+/// slow amplitude shimmer and occasional bubble transients.
+Float32List _riverNoise() {
+  final rng = math.Random(0x819E2);
+  final out = Float32List(_totalSamples);
+
+  // Pink-ish base via Kellet
+  double b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+  // Band-pass-ish via two single-pole filters
+  double lp = 0;
+  double hp = 0;
+  for (int i = 0; i < out.length; i++) {
+    final w = rng.nextDouble() * 2 - 1;
+    b0 = 0.99886 * b0 + w * 0.0555179;
+    b1 = 0.99332 * b1 + w * 0.0750759;
+    b2 = 0.96900 * b2 + w * 0.1538520;
+    b3 = 0.86650 * b3 + w * 0.3104856;
+    b4 = 0.55000 * b4 + w * 0.5329522;
+    b5 = -0.7616 * b5 - w * 0.0168980;
+    final pink = b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362;
+    b6 = w * 0.115926;
+
+    // Low pass to reduce hiss, then high-pass to remove rumble => "rushy" mid band
+    lp += 0.35 * (pink * 0.10 - lp);
+    hp = lp - hp * 0.0; // pass-through; keep simple
+    out[i] = lp * 1.8;
+  }
+
+  // Subtle slow amplitude shimmer (whole-number cycles in 8s for seamless loop)
+  for (int i = 0; i < out.length; i++) {
+    final t = i / sampleRate;
+    final shimmer = 0.85 +
+        0.15 * math.sin(2 * math.pi * (1 / durationSeconds) * t) +
+        0.05 * math.sin(2 * math.pi * (3 / durationSeconds) * t);
+    out[i] *= shimmer;
+  }
+
+  // Occasional "bubble" transients — short low-freq sine bursts
+  final bubbleCount = (durationSeconds * 4).round();
+  for (int b = 0; b < bubbleCount; b++) {
+    final pos = rng.nextInt(out.length - 300);
+    final freq = 200 + rng.nextDouble() * 400; // Hz
+    final decay = 80 + rng.nextInt(200);
+    final amp = 0.06 + rng.nextDouble() * 0.10;
+    for (int k = 0; k < decay && pos + k < out.length; k++) {
+      final env = math.exp(-k / (decay * 0.4));
+      final tone = math.sin(2 * math.pi * freq * (k / sampleRate));
+      out[pos + k] += amp * env * tone;
+    }
+  }
+
+  _normalizeTo(out, 0.85);
+  _seamlessLoop(out);
+  return out;
+}
+
+/// Ocean: slow waves washing in and out — filtered brown/pink noise with
+/// a deep, slow amplitude envelope. The envelope completes exactly one
+/// cycle over the loop length so it loops seamlessly.
+Float32List _oceanNoise() {
+  final rng = math.Random(0x0CEA);
+  final out = Float32List(_totalSamples);
+
+  // Filtered brown for deep wash
+  double brown = 0;
+  double lp = 0;
+  for (int i = 0; i < out.length; i++) {
+    final w = rng.nextDouble() * 2 - 1;
+    brown = (brown + w * 0.05) * 0.996;
+    lp += 0.10 * (brown - lp);
+    out[i] = lp * 3.0;
+  }
+
+  // Two overlapping wave envelopes — one fundamental cycle + a half-cycle
+  // overlay for variation; both integer multiples of 1/duration so loop is clean.
+  for (int i = 0; i < out.length; i++) {
+    final t = i / sampleRate;
+    final w1 = 0.5 +
+        0.5 * math.sin(2 * math.pi * (1 / durationSeconds) * t - math.pi / 2);
+    final w2 = 0.5 +
+        0.5 * math.sin(2 * math.pi * (2 / durationSeconds) * t + 0.7);
+    final env = math.pow(w1 * 0.7 + w2 * 0.3, 1.6).toDouble();
+    out[i] *= 0.25 + env * 0.95;
+  }
+
+  // Light foam — high-frequency hiss layered very softly during peaks
+  for (int i = 0; i < out.length; i++) {
+    final t = i / sampleRate;
+    final peak =
+        math.max(0.0, math.sin(2 * math.pi * (1 / durationSeconds) * t - math.pi / 2));
+    if (peak > 0.4) {
+      final hiss = (rng.nextDouble() * 2 - 1) * 0.05 * peak;
+      out[i] += hiss;
+    }
+  }
+
+  _normalizeTo(out, 0.88);
+  _seamlessLoop(out);
+  return out;
+}
+
+void _normalizeTo(Float32List buf, double targetPeak) {
+  double peak = 0;
+  for (final v in buf) {
+    final av = v.abs();
+    if (av > peak) peak = av;
+  }
+  if (peak <= 0) return;
+  final scale = targetPeak / peak;
+  for (int i = 0; i < buf.length; i++) {
+    buf[i] *= scale;
+  }
 }
 
 void _writeWav(String path, Float32List samples) {

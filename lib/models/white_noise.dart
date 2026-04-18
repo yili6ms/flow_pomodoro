@@ -6,7 +6,10 @@ enum WhiteNoise {
   white,
   pink,
   brown,
-  rain;
+  rain,
+  campfire,
+  river,
+  ocean;
 
   String get label => switch (this) {
         WhiteNoise.off => 'Off',
@@ -14,6 +17,9 @@ enum WhiteNoise {
         WhiteNoise.pink => 'Pink',
         WhiteNoise.brown => 'Brown',
         WhiteNoise.rain => 'Rain',
+        WhiteNoise.campfire => 'Campfire',
+        WhiteNoise.river => 'River',
+        WhiteNoise.ocean => 'Ocean',
       };
 
   String get id => switch (this) {
@@ -22,6 +28,9 @@ enum WhiteNoise {
         WhiteNoise.pink => 'pink',
         WhiteNoise.brown => 'brown',
         WhiteNoise.rain => 'rain',
+        WhiteNoise.campfire => 'campfire',
+        WhiteNoise.river => 'river',
+        WhiteNoise.ocean => 'ocean',
       };
 
   /// Asset path inside the app bundle (null for [off]).
@@ -31,6 +40,9 @@ enum WhiteNoise {
         WhiteNoise.pink => 'audio/pink.wav',
         WhiteNoise.brown => 'audio/brown.wav',
         WhiteNoise.rain => 'audio/rain.wav',
+        WhiteNoise.campfire => 'audio/campfire.wav',
+        WhiteNoise.river => 'audio/river.wav',
+        WhiteNoise.ocean => 'audio/ocean.wav',
       };
 
   IconData get icon => switch (this) {
@@ -39,6 +51,9 @@ enum WhiteNoise {
         WhiteNoise.pink => Icons.graphic_eq_rounded,
         WhiteNoise.brown => Icons.waves_rounded,
         WhiteNoise.rain => Icons.water_drop_rounded,
+        WhiteNoise.campfire => Icons.local_fire_department_rounded,
+        WhiteNoise.river => Icons.water_rounded,
+        WhiteNoise.ocean => Icons.tsunami_rounded,
       };
 
   static WhiteNoise fromId(String? id) => switch (id) {
@@ -46,6 +61,9 @@ enum WhiteNoise {
         'pink' => WhiteNoise.pink,
         'brown' => WhiteNoise.brown,
         'rain' => WhiteNoise.rain,
+        'campfire' => WhiteNoise.campfire,
+        'river' => WhiteNoise.river,
+        'ocean' => WhiteNoise.ocean,
         _ => WhiteNoise.off,
       };
 }

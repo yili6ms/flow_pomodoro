@@ -26,7 +26,7 @@ The experience adapts across 5 phases — **pre-focus → initiation → stabili
 - 🌬️ **Flow Gate transition** — short breathing animation + intent-setting microcopy before each session
 - 🎨 **4 selectable animation styles** — Orb · Wave · Particles · Fireworks
 - 🌈 **6 accent colors** — Coral · Violet · Emerald · Gold · Sky · Rose
-- 🔊 **White noise loops** — Off · White · Pink · Brown · Rain (procedurally generated, with volume control)
+- 🔊 **White noise loops** — Off · White · Pink · Brown · Rain · Campfire · River · Ocean (procedurally generated, with volume control)
 - ✅ **Lightweight tasks** — quick add, set active, track pomodoros per task (no project hierarchies, no clutter)
 - 📊 **Statistics** — today / total / 7-day trend / focus-by-time-of-day distribution
 - 🌓 **Themes** — system / light / dark
