@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/labels.dart';
+import '../models/flow_animation_style.dart';
+import '../providers/hybrid_accent_ticker.dart';
 import '../providers/settings_provider.dart';
 import '../providers/task_provider.dart';
 import '../providers/timer_provider.dart';
@@ -21,7 +25,8 @@ class HomeScreen extends StatelessWidget {
     final settings = context.watch<SettingsProvider>();
     final tasks = context.watch<TaskProvider>();
     final timer = context.watch<TimerProvider>();
-    final accent = settings.accentColor;
+    final accent = context.liveAccent();
+    final l = AppLocalizations.of(context);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -39,7 +44,7 @@ class HomeScreen extends StatelessWidget {
                 _Header(accent: accent.glow),
                 const SizedBox(height: 8),
                 Text(
-                  '“One thing at a time.”',
+                  l.homeQuote,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 13,
@@ -49,15 +54,43 @@ class HomeScreen extends StatelessWidget {
                 ),
                 Expanded(
                   child: Center(
-                    child: FlowVisual(
-                      style: settings.animationStyle,
-                      size: 280,
-                      isFocus: true,
-                      isBreak: false,
-                      flowStage: 'rest',
-                      reduceMotion: settings.reduceMotion,
-                      accentColor: accent.primary,
-                      accentGlow: accent.glow,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        final styles = FlowAnimationStyle.values;
+                        final next = styles[
+                            (styles.indexOf(settings.animationStyle) + 1) %
+                                styles.length];
+                        settings.setAnimationStyle(next);
+                        ScaffoldMessenger.of(context)
+                          ..hideCurrentSnackBar()
+                          ..showSnackBar(SnackBar(
+                            duration: const Duration(milliseconds: 900),
+                            behavior: SnackBarBehavior.floating,
+                            backgroundColor:
+                                FlowColors.bgDarkSoft.withValues(alpha: 0.92),
+                            content: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(next.icon,
+                                    size: 18, color: accent.primary),
+                                const SizedBox(width: 10),
+                                Text(l.animationChangedTo(
+                                    next.localizedLabel(context))),
+                              ],
+                            ),
+                          ));
+                      },
+                      child: FlowVisual(
+                        style: settings.animationStyle,
+                        size: 280,
+                        isFocus: true,
+                        isBreak: false,
+                        flowStage: 'rest',
+                        reduceMotion: settings.reduceMotion,
+                        accentColor: accent.primary,
+                        accentGlow: accent.glow,
+                      ),
                     ),
                   ),
                 ),
@@ -67,23 +100,23 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     Expanded(
                       child: _StatTile(
-                        label: 'Focus',
+                        label: l.labelFocus,
                         value: '${settings.focusMinutes}',
-                        suffix: 'min',
+                        suffix: l.minShort,
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: _StatTile(
-                        label: 'Break',
+                        label: l.labelBreak,
                         value: '${settings.shortBreakMinutes}',
-                        suffix: 'min',
+                        suffix: l.minShort,
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: _StatTile(
-                        label: 'Round',
+                        label: l.labelRound,
                         value: '${timer.currentRound + 1}',
                         suffix: '',
                       ),
@@ -92,7 +125,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 22),
                 GradientPillButton(
-                  label: 'Start Focus',
+                  label: l.startFocus,
                   icon: Icons.play_arrow_rounded,
                   color: accent.primary,
                   glow: accent.glow,
@@ -102,7 +135,7 @@ class HomeScreen extends StatelessWidget {
                 if (timer.phase != TimerPhase.idle)
                   TextButton.icon(
                     icon: const Icon(Icons.replay_rounded, size: 18),
-                    label: const Text('Resume current session'),
+                    label: Text(l.resumeCurrentSession),
                     onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => const FocusSessionScreen(),
@@ -138,6 +171,7 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Row(
       children: [
         Text(
@@ -161,7 +195,7 @@ class _Header extends StatelessWidget {
         const Spacer(),
         _IconChip(
           icon: Icons.checklist_rtl,
-          tooltip: 'Tasks',
+          tooltip: l.tasks,
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const TasksScreen()),
           ),
@@ -169,7 +203,7 @@ class _Header extends StatelessWidget {
         const SizedBox(width: 8),
         _IconChip(
           icon: Icons.bar_chart_rounded,
-          tooltip: 'Stats',
+          tooltip: l.stats,
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const StatsScreen()),
           ),
@@ -177,7 +211,7 @@ class _Header extends StatelessWidget {
         const SizedBox(width: 8),
         _IconChip(
           icon: Icons.settings_outlined,
-          tooltip: 'Settings',
+          tooltip: l.settings,
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const SettingsScreen()),
           ),
@@ -215,6 +249,7 @@ class _ActiveTaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final t = tasks.activeTask;
     return GlassPanel(
       onTap: () => Navigator.of(context).push(
@@ -240,7 +275,7 @@ class _ActiveTaskCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  t == null ? 'No active task' : 'Active',
+                  t == null ? l.noActiveTask : l.active,
                   style: const TextStyle(
                     fontSize: 11,
                     letterSpacing: 1.4,
@@ -250,7 +285,7 @@ class _ActiveTaskCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  t?.title ?? 'Tap to choose what to focus on',
+                  t?.title ?? l.tapToChoose,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 15),
