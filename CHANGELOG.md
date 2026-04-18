@@ -5,6 +5,31 @@ Tags follow `MAJOR.MINOR.PATCH` (no `v` prefix). Each release also has signed bi
 
 ---
 
+## 0.0.4 — 2026-04-18
+
+A bug-fix release focused on faithful stats and a seamless focus entry.
+
+### 🐛 Fixes
+- **Stats now credit early-ended sessions.** Aggregations (`Today`, `Total`, `Last 7 days`, `Focus distribution`) used to filter on `completed:true`, so any focus session ended via the leave-confirmation dialog was recorded but invisible — making the dashboard read "0" for users who didn't always run the timer to zero. Every focused minute is now credited. The **Sessions** card still counts only completed pomodoros.
+- **Flow Gate honors the selected animation.** The ~3.8 s breathing transition shown when entering a focus session hardcoded the Orb, so users with Wave / Particles / Fireworks / Hybrid accent selected saw an orb flash and then snap to their chosen style. The entry overlay now renders the active style + live accent from frame 1.
+
+### ✨ New
+- **Recent sessions** card on the Stats screen — shows up to 5 most recent sessions with title (task → intent → "Focus"), time-ago, ✅ Completed / ⚠ Ended early badge, and duration. Empty state when there's nothing yet. Localized in EN + 中文.
+
+### 🧪 Quality
+- `flutter analyze`: 0 issues
+- `flutter test`: **43 / 43 passing**
+
+### 📥 Downloads
+Binaries for this tag are published to [`release/0.0.4/`](./release/0.0.4) on `master`:
+- **Android** — `flow_pomodoro-0.0.4.apk` (or `.aab`)
+- **Windows** — `flow_pomodoro-0.0.4-windows.zip`
+- **Linux** — `flow_pomodoro-0.0.4-linux-x64.tar.gz` (requires `libgstreamer1.0-0` + `libgstreamer-plugins-base1.0-0`)
+
+**Full changelog:** [`0.0.3...0.0.4`](https://github.com/yili6ms/flow_pomodoro/compare/0.0.3...0.0.4)
+
+---
+
 ## 0.0.3 — 2026-04-18
 
 A polish + reach release: the app speaks Chinese now, picks up a living "Hybrid" accent, opens with an animated brand intro, and lets you swap the focus visualisation on the fly. Released under the MIT license.
