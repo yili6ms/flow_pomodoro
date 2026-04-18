@@ -129,6 +129,25 @@ class _FocusSessionScreenState extends State<FocusSessionScreen> {
         reduceMotion: settings.reduceMotion,
         child: Stack(
         children: [
+          Positioned.fill(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final fillSize = constraints.biggest.longestSide;
+                return Center(
+                  child: FlowVisual(
+                    style: settings.animationStyle,
+                    size: fillSize,
+                    isFocus: timer.isFocus,
+                    isBreak: isBreak,
+                    flowStage: timer.flowStage,
+                    reduceMotion: settings.reduceMotion,
+                    accentColor: accent.primary,
+                    accentGlow: accent.glow,
+                  ),
+                );
+              },
+            ),
+          ),
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -213,16 +232,6 @@ class _FocusSessionScreenState extends State<FocusSessionScreen> {
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        FlowVisual(
-                          style: settings.animationStyle,
-                          size: 260,
-                          isFocus: timer.isFocus,
-                          isBreak: isBreak,
-                          flowStage: timer.flowStage,
-                          reduceMotion: settings.reduceMotion,
-                          accentColor: accent.primary,
-                          accentGlow: accent.glow,
-                        ),
                         FlowRing(
                           size: 320,
                           progress: timer.progress,
