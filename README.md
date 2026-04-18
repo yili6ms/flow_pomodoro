@@ -95,7 +95,7 @@ On a tag push (e.g. `0.0.2`) the **Release** job additionally:
 3. Publishes a GitHub Release with auto-generated notes and the same files attached
 
 Workflow source: [`.github/workflows/build.yml`](.github/workflows/build.yml)
-All releases: <https://github.com/yili6ms/flow_pomodoro/releases>
+All releases: <https://github.com/yili6ms/flow_pomodoro/releases> — see [`CHANGELOG.md`](CHANGELOG.md) for the full release history.
 
 ## Testing
 
