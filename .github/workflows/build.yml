@@ -11,7 +11,6 @@ on:
 env:
   FLUTTER_VERSION: '3.41.4'
   FLUTTER_CHANNEL: 'stable'
-  WORKING_DIR: flow_pomodoro
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -30,15 +29,12 @@ jobs:
           cache: true
 
       - name: Pub get
-        working-directory: ${{ env.WORKING_DIR }}
         run: flutter pub get
 
       - name: Analyze
-        working-directory: ${{ env.WORKING_DIR }}
         run: flutter analyze
 
       - name: Test
-        working-directory: ${{ env.WORKING_DIR }}
         run: flutter test
 
   # ---------------------------------------------------------------------------
@@ -63,29 +59,26 @@ jobs:
           cache: true
 
       - name: Pub get
-        working-directory: ${{ env.WORKING_DIR }}
         run: flutter pub get
 
       - name: Build APK (release)
-        working-directory: ${{ env.WORKING_DIR }}
         run: flutter build apk --release
 
       - name: Build App Bundle (release)
-        working-directory: ${{ env.WORKING_DIR }}
         run: flutter build appbundle --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: flow_pomodoro-android-apk
-          path: ${{ env.WORKING_DIR }}/build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
 
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
           name: flow_pomodoro-android-aab
-          path: ${{ env.WORKING_DIR }}/build/app/outputs/bundle/release/app-release.aab
+          path: build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
 
   # ---------------------------------------------------------------------------
@@ -108,15 +101,13 @@ jobs:
         run: flutter config --enable-windows-desktop
 
       - name: Pub get
-        working-directory: ${{ env.WORKING_DIR }}
         run: flutter pub get
 
       - name: Build Windows (release)
-        working-directory: ${{ env.WORKING_DIR }}
         run: flutter build windows --release
 
       - name: Package Windows release
-        working-directory: ${{ env.WORKING_DIR }}/build/windows/x64/runner
+        working-directory: build/windows/x64/runner
         shell: pwsh
         run: Compress-Archive -Path Release\* -DestinationPath flow_pomodoro-windows.zip
 
@@ -124,7 +115,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: flow_pomodoro-windows
-          path: ${{ env.WORKING_DIR }}/build/windows/x64/runner/flow_pomodoro-windows.zip
+          path: build/windows/x64/runner/flow_pomodoro-windows.zip
           if-no-files-found: error
 
   # ---------------------------------------------------------------------------
@@ -152,26 +143,25 @@ jobs:
         run: flutter config --enable-linux-desktop
 
       - name: Pub get
-        working-directory: ${{ env.WORKING_DIR }}
         run: flutter pub get
 
       - name: Build Linux (release)
-        working-directory: ${{ env.WORKING_DIR }}
         run: flutter build linux --release
 
       - name: Package Linux bundle
-        working-directory: ${{ env.WORKING_DIR }}/build/linux/x64/release
+        working-directory: build/linux/x64/release
         run: tar -czf flow_pomodoro-linux-x64.tar.gz -C bundle .
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
           name: flow_pomodoro-linux-x64
-          path: ${{ env.WORKING_DIR }}/build/linux/x64/release/flow_pomodoro-linux-x64.tar.gz
+          path: build/linux/x64/release/flow_pomodoro-linux-x64.tar.gz
           if-no-files-found: error
 
   # ---------------------------------------------------------------------------
-  # On tag push (vX.Y.Z): publish all artifacts to a GitHub Release.
+  # On tag push (vX.Y.Z): publish all artifacts to a GitHub Release AND
+  # commit them to release/<tag>/ on the default branch.
   # ---------------------------------------------------------------------------
   release:
     name: Release
@@ -181,17 +171,49 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Checkout default branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+
+      - name: Stage binaries into release/<tag>/
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          DEST="release/${TAG}"
+          mkdir -p "$DEST"
+          cp artifacts/flow_pomodoro-android-apk/app-release.apk        "$DEST/flow_pomodoro-${TAG}.apk"
+          cp artifacts/flow_pomodoro-android-aab/app-release.aab        "$DEST/flow_pomodoro-${TAG}.aab"
+          cp artifacts/flow_pomodoro-windows/flow_pomodoro-windows.zip  "$DEST/flow_pomodoro-${TAG}-windows.zip"
+          cp artifacts/flow_pomodoro-linux-x64/flow_pomodoro-linux-x64.tar.gz \
+                                                                       "$DEST/flow_pomodoro-${TAG}-linux-x64.tar.gz"
+          ls -lh "$DEST"
+
+      - name: Commit binaries to release/<tag>/
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "release/${TAG}"
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore(release): publish binaries for ${TAG}"
+            git push origin HEAD:${{ github.event.repository.default_branch }}
+          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           files: |
-            artifacts/flow_pomodoro-android-apk/app-release.apk
-            artifacts/flow_pomodoro-android-aab/app-release.aab
-            artifacts/flow_pomodoro-windows/flow_pomodoro-windows.zip
-            artifacts/flow_pomodoro-linux-x64/flow_pomodoro-linux-x64.tar.gz
+            release/${{ github.ref_name }}/flow_pomodoro-${{ github.ref_name }}.apk
+            release/${{ github.ref_name }}/flow_pomodoro-${{ github.ref_name }}.aab
+            release/${{ github.ref_name }}/flow_pomodoro-${{ github.ref_name }}-windows.zip
+            release/${{ github.ref_name }}/flow_pomodoro-${{ github.ref_name }}-linux-x64.tar.gz
