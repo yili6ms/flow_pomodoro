@@ -18,6 +18,7 @@ class SettingsProvider extends ChangeNotifier {
   static const _kAccent = 'settings.accentColor';
   static const _kWhiteNoise = 'settings.whiteNoise';
   static const _kNoiseVolume = 'settings.noiseVolume';
+  static const _kLanguage = 'settings.language'; // 'system'|'en'|'zh'
 
   int focusMinutes = 25;
   int shortBreakMinutes = 5;
@@ -32,6 +33,16 @@ class SettingsProvider extends ChangeNotifier {
   AccentColor accentColor = AccentColor.coral;
   WhiteNoise whiteNoise = WhiteNoise.off;
   double noiseVolume = 0.5;
+
+  /// 'system' (follow device locale), 'en', or 'zh'. Persisted as a string.
+  /// Use [locale] to convert to a [Locale] (or null for system).
+  String language = 'system';
+
+  Locale? get locale => switch (language) {
+        'en' => const Locale('en'),
+        'zh' => const Locale('zh'),
+        _ => null,
+      };
 
   late SharedPreferences _prefs;
 
@@ -56,6 +67,8 @@ class SettingsProvider extends ChangeNotifier {
     accentColor = AccentColor.fromId(_prefs.getString(_kAccent));
     whiteNoise = WhiteNoise.fromId(_prefs.getString(_kWhiteNoise));
     noiseVolume = (_prefs.getDouble(_kNoiseVolume) ?? 0.5).clamp(0.0, 1.0);
+    final lang = _prefs.getString(_kLanguage) ?? 'system';
+    language = (lang == 'en' || lang == 'zh') ? lang : 'system';
     notifyListeners();
   }
 
@@ -139,6 +152,12 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> setNoiseVolume(double v) async {
     noiseVolume = v.clamp(0.0, 1.0);
     await _prefs.setDouble(_kNoiseVolume, noiseVolume);
+    notifyListeners();
+  }
+
+  Future<void> setLanguage(String v) async {
+    language = (v == 'en' || v == 'zh') ? v : 'system';
+    await _prefs.setString(_kLanguage, language);
     notifyListeners();
   }
 }

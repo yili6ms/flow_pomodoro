@@ -8,7 +8,8 @@ enum AccentColor {
   emerald,
   gold,
   sky,
-  rose;
+  rose,
+  hybrid;
 
   String get label => switch (this) {
         AccentColor.coral => 'Coral',
@@ -17,9 +18,14 @@ enum AccentColor {
         AccentColor.gold => 'Gold',
         AccentColor.sky => 'Sky',
         AccentColor.rose => 'Rose',
+        AccentColor.hybrid => 'Hybrid',
       };
 
   String get id => name;
+
+  /// True when the accent should be driven by a [HybridAccentTicker]
+  /// instead of returning a constant color.
+  bool get isDynamic => this == AccentColor.hybrid;
 
   Color get primary => switch (this) {
         AccentColor.coral => const Color(0xFFFF7A59),
@@ -28,6 +34,8 @@ enum AccentColor {
         AccentColor.gold => const Color(0xFFE5B142),
         AccentColor.sky => const Color(0xFF59A8FF),
         AccentColor.rose => const Color(0xFFE85A8A),
+        // Static fallback when ticker is not yet running.
+        AccentColor.hybrid => const Color(0xFFB377FF),
       };
 
   Color get glow => switch (this) {
@@ -37,6 +45,7 @@ enum AccentColor {
         AccentColor.gold => const Color(0xFFFAD98A),
         AccentColor.sky => const Color(0xFF9CCBFF),
         AccentColor.rose => const Color(0xFFFFA1BD),
+        AccentColor.hybrid => const Color(0xFFE5C8FF),
       };
 
   static AccentColor fromId(String? id) {

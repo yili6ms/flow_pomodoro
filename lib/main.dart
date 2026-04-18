@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'l10n/app_localizations.dart';
 import 'providers/audio_controller.dart';
+import 'providers/hybrid_accent_ticker.dart';
 import 'providers/settings_provider.dart';
 import 'providers/stats_provider.dart';
 import 'providers/task_provider.dart';
 import 'providers/timer_provider.dart';
 import 'screens/home_screen.dart';
+import 'screens/splash_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'theme/app_theme.dart';
 
@@ -25,11 +28,19 @@ Future<void> main() async {
   // ignore: unused_local_variable
   final audio = AudioController(settings: settings, timer: timer);
 
+  // Drives the rotating-hue color pair for the Hybrid accent. Idle until the
+  // user selects AccentColor.hybrid.
+  final hybridTicker = HybridAccentTicker();
+  // ignore: unused_local_variable
+  final hybridCtrl =
+      HybridAccentController(settings: settings, ticker: hybridTicker);
+
   runApp(FlowPomodoroApp(
     settings: settings,
     tasks: tasks,
     stats: stats,
     timer: timer,
+    hybridTicker: hybridTicker,
   ));
 }
 
@@ -38,6 +49,12 @@ class FlowPomodoroApp extends StatelessWidget {
   final TaskProvider tasks;
   final StatsProvider stats;
   final TimerProvider timer;
+  final HybridAccentTicker hybridTicker;
+
+  /// When true, skips the animated [SplashScreen] and shows the destination
+  /// screen directly. Used by widget tests so they don't have to wait for
+  /// the brand intro animation to play.
+  final bool skipSplash;
 
   const FlowPomodoroApp({
     super.key,
@@ -45,6 +62,8 @@ class FlowPomodoroApp extends StatelessWidget {
     required this.tasks,
     required this.stats,
     required this.timer,
+    required this.hybridTicker,
+    this.skipSplash = false,
   });
 
   @override
@@ -55,6 +74,7 @@ class FlowPomodoroApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: tasks),
         ChangeNotifierProvider.value(value: stats),
         ChangeNotifierProvider.value(value: timer),
+        ChangeNotifierProvider.value(value: hybridTicker),
       ],
       child: Consumer<SettingsProvider>(
         builder: (context, s, _) {
@@ -64,7 +84,13 @@ class FlowPomodoroApp extends StatelessWidget {
             themeMode: s.themeMode,
             theme: AppTheme.light(),
             darkTheme: AppTheme.dark(),
-            home: s.onboarded ? const HomeScreen() : const WelcomeScreen(),
+            locale: s.locale,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            onGenerateTitle: (ctx) => AppLocalizations.of(ctx).appName,
+            home: skipSplash
+                ? (s.onboarded ? const HomeScreen() : const WelcomeScreen())
+                : const SplashScreen(),
           );
         },
       ),

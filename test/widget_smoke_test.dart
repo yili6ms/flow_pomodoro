@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:flow_pomodoro/main.dart';
+import 'package:flow_pomodoro/providers/hybrid_accent_ticker.dart';
 import 'package:flow_pomodoro/providers/settings_provider.dart';
 import 'package:flow_pomodoro/providers/stats_provider.dart';
 import 'package:flow_pomodoro/providers/task_provider.dart';
@@ -22,11 +23,14 @@ Future<FlowPomodoroApp> _buildApp({required bool onboarded}) async {
   if (onboarded) await settings.setOnboarded(true);
   await settings.setHaptics(false);
   final timer = TimerProvider(settings: settings, tasks: tasks, stats: stats);
+  final hybridTicker = HybridAccentTicker();
   return FlowPomodoroApp(
     settings: settings,
     tasks: tasks,
     stats: stats,
     timer: timer,
+    hybridTicker: hybridTicker,
+    skipSplash: true,
   );
 }
 

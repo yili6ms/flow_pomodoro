@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/labels.dart';
+import '../providers/hybrid_accent_ticker.dart';
 import '../providers/settings_provider.dart';
 import '../providers/stats_provider.dart';
 import '../theme/app_theme.dart';
@@ -8,29 +11,22 @@ import '../widgets/aurora_background.dart';
 class StatsScreen extends StatelessWidget {
   const StatsScreen({super.key});
 
-  String _fmtMin(int sec) {
-    final m = sec ~/ 60;
-    if (m < 60) return '${m}m';
-    final h = m ~/ 60;
-    final r = m % 60;
-    return '${h}h ${r}m';
-  }
-
   @override
   Widget build(BuildContext context) {
     final stats = context.watch<StatsProvider>();
     final today = stats.focusSecondsForDay(DateTime.now());
     final week = stats.last7DaysMinutes();
     final dist = stats.focusDistributionByTime();
-    final distLabels = const ['Morning', 'Afternoon', 'Evening', 'Night'];
+    final l = AppLocalizations.of(context);
+    final distLabels = [l.morning, l.afternoon, l.evening, l.night];
 
     final settings = context.watch<SettingsProvider>();
-    final accent = settings.accentColor;
+    final accent = context.liveAccent();
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Statistics'),
+        title: Text(l.statistics),
         backgroundColor: Colors.transparent,
       ),
       body: AuroraBackground(
@@ -45,33 +41,42 @@ class StatsScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: _Card(
-                      label: 'Today',
-                      value: _fmtMin(today)),
+                      label: l.today,
+                      value: formatFocusDuration(context, today)),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _Card(
-                      label: 'Sessions',
+                      label: l.sessions,
                       value: '${stats.totalCompletedSessions}'),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _Card(
-                      label: 'Total',
-                      value: _fmtMin(stats.totalFocusSeconds)),
+                      label: l.total,
+                      value: formatFocusDuration(
+                          context, stats.totalFocusSeconds)),
                 ),
               ],
             ),
             const SizedBox(height: 24),
-            const Text('Last 7 days (minutes)',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            Text(l.last7Days,
+                style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 12),
-            _BarChart(values: week, labels: const [
-              'M-6', 'M-5', 'M-4', 'M-3', 'M-2', 'M-1', 'Today'
+            _BarChart(values: week, labels: [
+              l.minutesAgo(6),
+              l.minutesAgo(5),
+              l.minutesAgo(4),
+              l.minutesAgo(3),
+              l.minutesAgo(2),
+              l.minutesAgo(1),
+              l.today,
             ]),
             const SizedBox(height: 24),
-            const Text('Focus distribution by time of day',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            Text(l.focusDistribution,
+                style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 12),
             _BarChart(
               values: dist.map((s) => (s / 60).round()).toList(),

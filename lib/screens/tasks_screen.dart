@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
+import '../providers/hybrid_accent_ticker.dart';
 import '../providers/settings_provider.dart';
 import '../providers/task_provider.dart';
 import '../theme/app_theme.dart';
@@ -32,11 +34,12 @@ class _TasksScreenState extends State<TasksScreen> {
   Widget build(BuildContext context) {
     final tasks = context.watch<TaskProvider>();
     final settings = context.watch<SettingsProvider>();
-    final accent = settings.accentColor;
+    final accent = context.liveAccent();
+    final l = AppLocalizations.of(context);
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Tasks'),
+        title: Text(l.tasks),
         backgroundColor: Colors.transparent,
       ),
       body: AuroraBackground(
@@ -53,8 +56,8 @@ class _TasksScreenState extends State<TasksScreen> {
                     Expanded(
                       child: TextField(
                         controller: _controller,
-                        decoration: const InputDecoration(
-                          hintText: 'New task',
+                        decoration: InputDecoration(
+                          hintText: l.newTaskHint,
                         ),
                         onSubmitted: (_) => _add(context),
                       ),
@@ -70,9 +73,9 @@ class _TasksScreenState extends State<TasksScreen> {
               ),
               Expanded(
                 child: tasks.activeTasks.isEmpty
-                    ? const Center(
-                        child: Text('No tasks yet.',
-                            style: TextStyle(color: FlowColors.textMuted)),
+                    ? Center(
+                        child: Text(l.noTasksYet,
+                            style: const TextStyle(color: FlowColors.textMuted)),
                       )
                     : ListView.separated(
                         itemCount: tasks.activeTasks.length,
@@ -92,7 +95,7 @@ class _TasksScreenState extends State<TasksScreen> {
                             ),
                             title: Text(t.title),
                             subtitle: Text(
-                                '${t.completedPomodoros} pomodoros',
+                                l.pomodorosCount(t.completedPomodoros),
                                 style: const TextStyle(
                                     color: FlowColors.textMuted,
                                     fontSize: 12)),

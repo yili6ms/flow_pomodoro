@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
+import '../providers/hybrid_accent_ticker.dart';
 import '../providers/settings_provider.dart';
 import '../providers/task_provider.dart';
 import '../theme/app_theme.dart';
@@ -41,7 +43,8 @@ class _FocusIntentScreenState extends State<FocusIntentScreen> {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
-    final accent = settings.accentColor;
+    final accent = context.liveAccent();
+    final l = AppLocalizations.of(context);
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -63,7 +66,7 @@ class _FocusIntentScreenState extends State<FocusIntentScreen> {
               children: [
                 const Spacer(),
                 Text(
-                  'INTENTION',
+                  l.intentionEyebrow,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 12,
@@ -73,10 +76,10 @@ class _FocusIntentScreenState extends State<FocusIntentScreen> {
                   ),
                 ),
                 const SizedBox(height: 14),
-                const Text(
-                  'What will you do\nin this session?',
+                Text(
+                  l.intentionPrompt,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w200,
                     height: 1.25,
@@ -94,8 +97,8 @@ class _FocusIntentScreenState extends State<FocusIntentScreen> {
                     style: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.w400),
                     cursorColor: accent.glow,
-                    decoration: const InputDecoration(
-                      hintText: 'e.g. Draft chapter outline',
+                    decoration: InputDecoration(
+                      hintText: l.intentionHint,
                       filled: false,
                       border: InputBorder.none,
                       enabledBorder: InputBorder.none,
@@ -105,14 +108,14 @@ class _FocusIntentScreenState extends State<FocusIntentScreen> {
                   ),
                 ),
                 const SizedBox(height: 18),
-                const Text(
-                  'Stay with the task. Let focus settle.',
+                Text(
+                  l.intentionFooter,
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: FlowColors.textMuted, fontSize: 13),
+                  style: const TextStyle(color: FlowColors.textMuted, fontSize: 13),
                 ),
                 const Spacer(),
                 GradientPillButton(
-                  label: 'Enter the flow',
+                  label: l.enterTheFlow,
                   icon: Icons.east_rounded,
                   color: accent.primary,
                   glow: accent.glow,

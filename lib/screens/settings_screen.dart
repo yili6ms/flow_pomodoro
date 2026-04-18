@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/labels.dart';
 import '../models/accent_color.dart';
 import '../models/flow_animation_style.dart';
 import '../models/white_noise.dart';
@@ -14,10 +16,11 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = context.watch<SettingsProvider>();
     final accent = s.accentColor;
+    final l = AppLocalizations.of(context);
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(l.settings),
         backgroundColor: Colors.transparent,
       ),
       body: AuroraBackground(
@@ -27,33 +30,33 @@ class SettingsScreen extends StatelessWidget {
         child: SafeArea(
           child: ListView(
           children: [
-            _section('Timer'),
+            _section(l.sectionTimer),
             _NumberTile(
-              label: 'Focus duration',
+              label: l.focusDuration,
               value: s.focusMinutes,
-              suffix: 'min',
+              suffix: l.minShort,
               min: 1,
               max: 180,
               onChanged: s.setFocusMinutes,
             ),
             _NumberTile(
-              label: 'Short break',
+              label: l.shortBreak,
               value: s.shortBreakMinutes,
-              suffix: 'min',
+              suffix: l.minShort,
               min: 1,
               max: 60,
               onChanged: s.setShortBreakMinutes,
             ),
             _NumberTile(
-              label: 'Long break',
+              label: l.longBreak,
               value: s.longBreakMinutes,
-              suffix: 'min',
+              suffix: l.minShort,
               min: 1,
               max: 90,
               onChanged: s.setLongBreakMinutes,
             ),
             _NumberTile(
-              label: 'Rounds before long break',
+              label: l.roundsBeforeLongBreak,
               value: s.roundsBeforeLongBreak,
               suffix: '',
               min: 2,
@@ -61,41 +64,55 @@ class SettingsScreen extends StatelessWidget {
               onChanged: s.setRoundsBeforeLongBreak,
             ),
             SwitchListTile(
-              title: const Text('Auto-switch phases'),
-              subtitle: const Text(
-                  'Automatically start break after focus completes'),
+              title: Text(l.autoSwitch),
+              subtitle: Text(l.autoSwitchSubtitle),
               value: s.autoSwitch,
               onChanged: s.setAutoSwitch,
             ),
             const Divider(),
-            _section('Experience'),
+            _section(l.sectionExperience),
             SwitchListTile(
-              title: const Text('Reduce motion'),
+              title: Text(l.reduceMotion),
               value: s.reduceMotion,
               onChanged: s.setReduceMotion,
             ),
             SwitchListTile(
-              title: const Text('Haptic feedback'),
+              title: Text(l.haptics),
               value: s.haptics,
               onChanged: s.setHaptics,
             ),
             ListTile(
-              title: const Text('Theme'),
-              subtitle: Text(_themeLabel(s.themeMode)),
+              title: Text(l.theme),
+              subtitle: Text(_themeLabel(context, s.themeMode)),
               trailing: PopupMenuButton<ThemeMode>(
                 onSelected: s.setThemeMode,
-                itemBuilder: (_) => const [
+                itemBuilder: (_) => [
                   PopupMenuItem(
-                      value: ThemeMode.system, child: Text('System')),
+                      value: ThemeMode.system, child: Text(l.themeSystem)),
                   PopupMenuItem(
-                      value: ThemeMode.light, child: Text('Light')),
+                      value: ThemeMode.light, child: Text(l.themeLight)),
                   PopupMenuItem(
-                      value: ThemeMode.dark, child: Text('Dark')),
+                      value: ThemeMode.dark, child: Text(l.themeDark)),
+                ],
+              ),
+            ),
+            ListTile(
+              title: Text(l.sectionLanguage),
+              subtitle: Text(_languageLabel(context, s.language)),
+              trailing: PopupMenuButton<String>(
+                onSelected: s.setLanguage,
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                      value: 'system', child: Text(l.languageSystem)),
+                  PopupMenuItem(
+                      value: 'en', child: Text(l.languageEnglish)),
+                  PopupMenuItem(
+                      value: 'zh', child: Text(l.languageChinese)),
                 ],
               ),
             ),
             const Divider(),
-            _section('Animation'),
+            _section(l.sectionAnimation),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
               child: Wrap(
@@ -104,14 +121,14 @@ class SettingsScreen extends StatelessWidget {
                 children: FlowAnimationStyle.values.map((style) {
                   final selected = s.animationStyle == style;
                   return ChoiceChip(
-                    label: Text(style.label),
+                    label: Text(style.localizedLabel(context)),
                     selected: selected,
                     onSelected: (_) => s.setAnimationStyle(style),
                   );
                 }).toList(),
               ),
             ),
-            _section('Accent color'),
+            _section(l.sectionAccentColor),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
               child: Wrap(
@@ -119,41 +136,59 @@ class SettingsScreen extends StatelessWidget {
                 runSpacing: 12,
                 children: AccentColor.values.map((c) {
                   final selected = s.accentColor == c;
+                  final isHybrid = c.isDynamic;
                   return GestureDetector(
                     onTap: () => s.setAccentColor(c),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: c.primary,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: selected
-                              ? Colors.white
-                              : Colors.transparent,
-                          width: 3,
+                    child: Tooltip(
+                      message: c.localizedLabel(context),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: isHybrid ? null : c.primary,
+                          gradient: isHybrid
+                              ? const SweepGradient(
+                                  colors: [
+                                    Color(0xFFFF5C5C),
+                                    Color(0xFFFFB347),
+                                    Color(0xFFFFE066),
+                                    Color(0xFF6BD968),
+                                    Color(0xFF59A8FF),
+                                    Color(0xFF8E7CFF),
+                                    Color(0xFFE85A8A),
+                                    Color(0xFFFF5C5C),
+                                  ],
+                                )
+                              : null,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: selected
+                                ? Colors.white
+                                : Colors.transparent,
+                            width: 3,
+                          ),
+                          boxShadow: [
+                            if (selected)
+                              BoxShadow(
+                                color: c.glow.withValues(alpha: 0.6),
+                                blurRadius: 12,
+                                spreadRadius: 1,
+                              ),
+                          ],
                         ),
-                        boxShadow: [
-                          if (selected)
-                            BoxShadow(
-                              color: c.glow.withValues(alpha: 0.6),
-                              blurRadius: 12,
-                              spreadRadius: 1,
-                            ),
-                        ],
+                        child: selected
+                            ? const Icon(Icons.check,
+                                size: 18, color: Colors.white)
+                            : null,
                       ),
-                      child: selected
-                          ? const Icon(Icons.check,
-                              size: 18, color: Colors.white)
-                          : null,
                     ),
                   );
                 }).toList(),
               ),
             ),
             const Divider(),
-            _section('White noise'),
+            _section(l.sectionWhiteNoise),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
               child: Wrap(
@@ -163,7 +198,7 @@ class SettingsScreen extends StatelessWidget {
                   final selected = s.whiteNoise == n;
                   return ChoiceChip(
                     avatar: Icon(n.icon, size: 18),
-                    label: Text(n.label),
+                    label: Text(n.localizedLabel(context)),
                     selected: selected,
                     onSelected: (_) => s.setWhiteNoise(n),
                   );
@@ -171,7 +206,7 @@ class SettingsScreen extends StatelessWidget {
               ),
             ),
             ListTile(
-              title: const Text('Volume'),
+              title: Text(l.volume),
               subtitle: Slider(
                 value: s.noiseVolume,
                 onChanged: s.whiteNoise == WhiteNoise.off
@@ -183,7 +218,7 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 24),
             Center(
               child: Text(
-                'Flow Pomodoro · v0.1',
+                '${l.appName} · v0.1',
                 style: TextStyle(
                     fontSize: 12,
                     color: Theme.of(context)
@@ -200,11 +235,23 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  String _themeLabel(ThemeMode m) => switch (m) {
-        ThemeMode.system => 'System',
-        ThemeMode.light => 'Light',
-        ThemeMode.dark => 'Dark',
-      };
+  String _themeLabel(BuildContext c, ThemeMode m) {
+    final l = AppLocalizations.of(c);
+    return switch (m) {
+      ThemeMode.system => l.themeSystem,
+      ThemeMode.light => l.themeLight,
+      ThemeMode.dark => l.themeDark,
+    };
+  }
+
+  String _languageLabel(BuildContext c, String code) {
+    final l = AppLocalizations.of(c);
+    return switch (code) {
+      'en' => l.languageEnglish,
+      'zh' => l.languageChinese,
+      _ => l.languageSystem,
+    };
+  }
 
   Widget _section(String t) => Padding(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 6),

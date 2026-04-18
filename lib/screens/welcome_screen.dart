@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
+import '../providers/hybrid_accent_ticker.dart';
 import '../providers/settings_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/aurora_background.dart';
@@ -20,7 +22,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
-    final accent = settings.accentColor;
+    final accent = context.liveAccent();
+    final l = AppLocalizations.of(context);
 
     return Scaffold(
       body: AuroraBackground(
@@ -45,10 +48,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Flow Pomodoro',
+                Text(
+                  l.appName,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 40,
                     fontWeight: FontWeight.w200,
                     letterSpacing: -1.0,
@@ -56,10 +59,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 14),
-                const Text(
-                  'Enter the flow.\nOne thing at a time.',
+                Text(
+                  l.welcomeTagline,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 15,
                     color: FlowColors.textMuted,
                     height: 1.5,
@@ -81,7 +84,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   ),
                 ),
                 Text(
-                  'CHOOSE YOUR FOCUS DURATION',
+                  l.chooseFocusDuration,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 11,
@@ -123,7 +126,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             ),
                           ),
                           child: Text(
-                            '$m min',
+                            l.minutesShort(m),
                             style: TextStyle(
                               color: selected
                                   ? Colors.white
@@ -139,7 +142,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 ),
                 const SizedBox(height: 32),
                 GradientPillButton(
-                  label: 'Begin',
+                  label: l.begin,
                   icon: Icons.arrow_forward_rounded,
                   color: accent.primary,
                   glow: accent.glow,
