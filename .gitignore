@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Per-tag release binaries — built by CI and attached to the GitHub Release
+# (not committed to the repo so the working tree stays small).
+/release/

@@ -199,18 +199,9 @@ jobs:
                                                                        "$DEST/flow_pomodoro-${TAG}-linux-x64.tar.gz"
           ls -lh "$DEST"
 
-      - name: Commit binaries to release/<tag>/
-        run: |
-          TAG="${GITHUB_REF_NAME}"
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "release/${TAG}"
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-          else
-            git commit -m "chore(release): publish binaries for ${TAG}"
-            git push origin HEAD:${{ github.event.repository.default_branch }}
-          fi
+      # Binaries are attached to the GitHub Release below; we deliberately do
+      # NOT commit them back to the repo (kept release/ out of git via
+      # .gitignore so the working tree stays small).
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
