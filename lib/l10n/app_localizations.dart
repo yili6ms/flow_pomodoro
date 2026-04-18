@@ -410,6 +410,36 @@ abstract class AppLocalizations {
   /// **'{h}h {m}m'**
   String hoursMinutesShort(int h, int m);
 
+  /// No description provided for @recentSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent sessions'**
+  String get recentSessions;
+
+  /// No description provided for @noSessionsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No sessions yet — finish or end one to see it here.'**
+  String get noSessionsYet;
+
+  /// No description provided for @sessionEndedEarly.
+  ///
+  /// In en, this message translates to:
+  /// **'Ended early'**
+  String get sessionEndedEarly;
+
+  /// No description provided for @sessionCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get sessionCompleted;
+
+  /// No description provided for @sessionUntitled.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus'**
+  String get sessionUntitled;
+
   /// No description provided for @sectionTimer.
   ///
   /// In en, this message translates to:

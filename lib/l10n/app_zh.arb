@@ -59,6 +59,11 @@
   "minutesAgo": "前{n}",
   "minutesShortFmt": "{m}分",
   "hoursMinutesShort": "{h}时 {m}分",
+  "recentSessions": "最近的专注",
+  "noSessionsYet": "还没有专注记录 — 完成或结束一次专注后会出现在这里。",
+  "sessionEndedEarly": "提前结束",
+  "sessionCompleted": "已完成",
+  "sessionUntitled": "专注",
 
   "sectionTimer": "计时器",
   "sectionExperience": "体验",

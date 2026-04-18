@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/labels.dart';
+import '../models/session.dart';
 import '../providers/hybrid_accent_ticker.dart';
 import '../providers/settings_provider.dart';
 import '../providers/stats_provider.dart';
@@ -82,9 +83,141 @@ class StatsScreen extends StatelessWidget {
               values: dist.map((s) => (s / 60).round()).toList(),
               labels: distLabels,
             ),
+            const SizedBox(height: 24),
+            Text(l.recentSessions,
+                style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 12),
+            _RecentSessionsList(
+              sessions: stats.recentSessions(limit: 5),
+              accent: accent.primary,
+            ),
           ],
         ),
         ),
+      ),
+    );
+  }
+}
+
+class _RecentSessionsList extends StatelessWidget {
+  final List<FocusSession> sessions;
+  final Color accent;
+  const _RecentSessionsList({required this.sessions, required this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    if (sessions.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: FlowColors.bgDarkSoft,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Text(
+          l.noSessionsYet,
+          style: const TextStyle(color: FlowColors.textMuted, fontSize: 13),
+        ),
+      );
+    }
+    return Container(
+      decoration: BoxDecoration(
+        color: FlowColors.bgDarkSoft,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: [
+          for (int i = 0; i < sessions.length; i++) ...[
+            _SessionTile(session: sessions[i], accent: accent),
+            if (i < sessions.length - 1)
+              Divider(
+                height: 1,
+                color: Colors.white.withValues(alpha: 0.05),
+                indent: 16,
+                endIndent: 16,
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _SessionTile extends StatelessWidget {
+  final FocusSession session;
+  final Color accent;
+  const _SessionTile({required this.session, required this.accent});
+
+  String _timeAgo(BuildContext context, DateTime t) {
+    final diff = DateTime.now().difference(t);
+    if (diff.inMinutes < 1) return 'now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final title = (session.taskTitle != null && session.taskTitle!.isNotEmpty)
+        ? session.taskTitle!
+        : (session.intent != null && session.intent!.isNotEmpty)
+            ? session.intent!
+            : l.sessionUntitled;
+    final statusColor = session.completed
+        ? accent
+        : FlowColors.textFaint;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: statusColor,
+              shape: BoxShape.circle,
+              boxShadow: session.completed
+                  ? [
+                      BoxShadow(
+                        color: accent.withValues(alpha: 0.6),
+                        blurRadius: 6,
+                      )
+                    ]
+                  : null,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w500),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${_timeAgo(context, session.startedAt)} · '
+                  '${session.completed ? l.sessionCompleted : l.sessionEndedEarly}',
+                  style: const TextStyle(
+                      fontSize: 11, color: FlowColors.textMuted),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            formatFocusDuration(context, session.durationSeconds),
+            style: const TextStyle(
+                fontSize: 14, fontWeight: FontWeight.w300, letterSpacing: -0.3),
+          ),
+        ],
       ),
     );
   }

@@ -66,6 +66,11 @@
   "@minutesShortFmt": { "placeholders": { "m": { "type": "int" } } },
   "hoursMinutesShort": "{h}h {m}m",
   "@hoursMinutesShort": { "placeholders": { "h": { "type": "int" }, "m": { "type": "int" } } },
+  "recentSessions": "Recent sessions",
+  "noSessionsYet": "No sessions yet — finish or end one to see it here.",
+  "sessionEndedEarly": "Ended early",
+  "sessionCompleted": "Completed",
+  "sessionUntitled": "Focus",
 
   "sectionTimer": "Timer",
   "sectionExperience": "Experience",

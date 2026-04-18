@@ -187,6 +187,22 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get recentSessions => 'Recent sessions';
+
+  @override
+  String get noSessionsYet =>
+      'No sessions yet — finish or end one to see it here.';
+
+  @override
+  String get sessionEndedEarly => 'Ended early';
+
+  @override
+  String get sessionCompleted => 'Completed';
+
+  @override
+  String get sessionUntitled => 'Focus';
+
+  @override
   String get sectionTimer => 'Timer';
 
   @override

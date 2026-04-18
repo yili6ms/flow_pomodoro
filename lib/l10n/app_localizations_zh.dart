@@ -185,6 +185,21 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get recentSessions => '最近的专注';
+
+  @override
+  String get noSessionsYet => '还没有专注记录 — 完成或结束一次专注后会出现在这里。';
+
+  @override
+  String get sessionEndedEarly => '提前结束';
+
+  @override
+  String get sessionCompleted => '已完成';
+
+  @override
+  String get sessionUntitled => '专注';
+
+  @override
   String get sectionTimer => '计时器';
 
   @override

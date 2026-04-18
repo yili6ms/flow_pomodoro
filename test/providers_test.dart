@@ -232,8 +232,10 @@ void main() {
       await s.recordSession(make(start: DateTime.now(), duration: 600));
       await s.recordSession(
           make(start: DateTime.now(), duration: 300, completed: false));
+      // totalCompletedSessions counts only pomodoros that finished.
       expect(s.totalCompletedSessions, 2);
-      expect(s.totalFocusSeconds, 2100);
+      // totalFocusSeconds credits all focus time, including early-ended sessions.
+      expect(s.totalFocusSeconds, 2400);
     });
 
     test('focusSecondsForDay only counts that day', () async {

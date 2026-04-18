@@ -53,19 +53,21 @@ class StatsProvider extends ChangeNotifier {
 
   // ---- Aggregations ----
 
+  /// Number of focus sessions that ran to completion ("pomodoros").
   int get totalCompletedSessions =>
       _sessions.where((s) => s.completed).length;
 
-  int get totalFocusSeconds => _sessions
-      .where((s) => s.completed)
-      .fold(0, (sum, s) => sum + s.durationSeconds);
+  /// Total focused seconds across **all** recorded sessions, including
+  /// sessions that were ended early. Mirrors how most pomodoro apps credit
+  /// time spent focusing even when the round wasn't finished.
+  int get totalFocusSeconds =>
+      _sessions.fold(0, (sum, s) => sum + s.durationSeconds);
 
   int focusSecondsForDay(DateTime day) {
     final start = DateTime(day.year, day.month, day.day);
     final end = start.add(const Duration(days: 1));
     return _sessions
         .where((s) =>
-            s.completed &&
             s.startedAt.isAfter(start.subtract(const Duration(seconds: 1))) &&
             s.startedAt.isBefore(end))
         .fold(0, (sum, s) => sum + s.durationSeconds);
@@ -86,7 +88,7 @@ class StatsProvider extends ChangeNotifier {
   /// morning(5-12), afternoon(12-17), evening(17-22), night(22-5).
   List<int> focusDistributionByTime() {
     final buckets = [0, 0, 0, 0];
-    for (final s in _sessions.where((s) => s.completed)) {
+    for (final s in _sessions) {
       final h = s.startedAt.hour;
       if (h >= 5 && h < 12) {
         buckets[0] += s.durationSeconds;
@@ -100,4 +102,8 @@ class StatsProvider extends ChangeNotifier {
     }
     return buckets;
   }
+
+  /// Most recent sessions, newest first.
+  List<FocusSession> recentSessions({int limit = 5}) =>
+      _sessions.take(limit).toList(growable: false);
 }
