@@ -1,0 +1,197 @@
+name: Build
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+env:
+  FLUTTER_VERSION: '3.41.4'
+  FLUTTER_CHANNEL: 'stable'
+  WORKING_DIR: flow_pomodoro
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Lint + test once on Linux (fastest), shared across platforms.
+  # ---------------------------------------------------------------------------
+  analyze-test:
+    name: Analyze & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+
+      - name: Pub get
+        working-directory: ${{ env.WORKING_DIR }}
+        run: flutter pub get
+
+      - name: Analyze
+        working-directory: ${{ env.WORKING_DIR }}
+        run: flutter analyze
+
+      - name: Test
+        working-directory: ${{ env.WORKING_DIR }}
+        run: flutter test
+
+  # ---------------------------------------------------------------------------
+  # Android APK + AAB
+  # ---------------------------------------------------------------------------
+  build-android:
+    name: Build Android
+    needs: analyze-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+
+      - name: Pub get
+        working-directory: ${{ env.WORKING_DIR }}
+        run: flutter pub get
+
+      - name: Build APK (release)
+        working-directory: ${{ env.WORKING_DIR }}
+        run: flutter build apk --release
+
+      - name: Build App Bundle (release)
+        working-directory: ${{ env.WORKING_DIR }}
+        run: flutter build appbundle --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: flow_pomodoro-android-apk
+          path: ${{ env.WORKING_DIR }}/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: flow_pomodoro-android-aab
+          path: ${{ env.WORKING_DIR }}/build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # Windows .exe (zipped runner bundle)
+  # ---------------------------------------------------------------------------
+  build-windows:
+    name: Build Windows
+    needs: analyze-test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Pub get
+        working-directory: ${{ env.WORKING_DIR }}
+        run: flutter pub get
+
+      - name: Build Windows (release)
+        working-directory: ${{ env.WORKING_DIR }}
+        run: flutter build windows --release
+
+      - name: Package Windows release
+        working-directory: ${{ env.WORKING_DIR }}/build/windows/x64/runner
+        shell: pwsh
+        run: Compress-Archive -Path Release\* -DestinationPath flow_pomodoro-windows.zip
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flow_pomodoro-windows
+          path: ${{ env.WORKING_DIR }}/build/windows/x64/runner/flow_pomodoro-windows.zip
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # Linux bundle (tar.gz)
+  # ---------------------------------------------------------------------------
+  build-linux:
+    name: Build Linux
+    needs: analyze-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+
+      - name: Enable Linux desktop
+        run: flutter config --enable-linux-desktop
+
+      - name: Pub get
+        working-directory: ${{ env.WORKING_DIR }}
+        run: flutter pub get
+
+      - name: Build Linux (release)
+        working-directory: ${{ env.WORKING_DIR }}
+        run: flutter build linux --release
+
+      - name: Package Linux bundle
+        working-directory: ${{ env.WORKING_DIR }}/build/linux/x64/release
+        run: tar -czf flow_pomodoro-linux-x64.tar.gz -C bundle .
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flow_pomodoro-linux-x64
+          path: ${{ env.WORKING_DIR }}/build/linux/x64/release/flow_pomodoro-linux-x64.tar.gz
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # On tag push (vX.Y.Z): publish all artifacts to a GitHub Release.
+  # ---------------------------------------------------------------------------
+  release:
+    name: Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-android, build-windows, build-linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            artifacts/flow_pomodoro-android-apk/app-release.apk
+            artifacts/flow_pomodoro-android-aab/app-release.aab
+            artifacts/flow_pomodoro-windows/flow_pomodoro-windows.zip
+            artifacts/flow_pomodoro-linux-x64/flow_pomodoro-linux-x64.tar.gz
