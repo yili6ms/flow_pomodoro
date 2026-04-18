@@ -6,9 +6,12 @@
 
 Pomodoro timer · Lightweight tasks · Calm animations · Local-only & private
 
-[![Build](https://img.shields.io/badge/build-Android%20%7C%20Windows%20%7C%20Linux-blue)](.github/workflows/build.yml)
-[![Tests](https://img.shields.io/badge/tests-40%20passing-brightgreen)](#testing)
+[![Build](https://github.com/yili6ms/flow_pomodoro/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/yili6ms/flow_pomodoro/actions/workflows/build.yml)
+[![Latest release](https://img.shields.io/github/v/release/yili6ms/flow_pomodoro?display_name=tag&sort=semver)](https://github.com/yili6ms/flow_pomodoro/releases/latest)
+[![Tests](https://img.shields.io/badge/tests-43%20passing-brightgreen)](#testing)
 [![Flutter](https://img.shields.io/badge/Flutter-3.41-02569B?logo=flutter)](https://flutter.dev)
+[![Platforms](https://img.shields.io/badge/platforms-Android%20%7C%20Windows%20%7C%20Linux-blueviolet)](#platforms)
+[![License](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
 
 </div>
 
@@ -61,17 +64,44 @@ flutter build appbundle --release
 # Windows
 flutter build windows --release
 
-# Linux (run on a Linux host with: clang cmake ninja-build pkg-config libgtk-3-dev)
+# Linux (run on a Linux host with deps below — see CI workflow for the exact list)
 flutter build linux --release
 ```
 
-CI builds all three on every push — see [`.github/workflows/build.yml`](.github/workflows/build.yml). Tagged pushes (`v*`) publish a GitHub Release with all artifacts attached.
+> **Linux build deps** (Debian/Ubuntu):
+> ```bash
+> sudo apt install clang cmake ninja-build pkg-config \
+>     libgtk-3-dev liblzma-dev \
+>     libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+> ```
+
+## Continuous Integration & Releases
+
+[![Build status](https://github.com/yili6ms/flow_pomodoro/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/yili6ms/flow_pomodoro/actions/workflows/build.yml)
+[![Latest release](https://img.shields.io/github/v/release/yili6ms/flow_pomodoro?display_name=tag&sort=semver)](https://github.com/yili6ms/flow_pomodoro/releases/latest)
+
+GitHub Actions runs on every push and PR to `master`/`main`:
+
+| Job | Runner | Output |
+|-----|--------|--------|
+| **Analyze & Test** | `ubuntu-latest` | `flutter analyze` + 43 tests |
+| **Build Android**  | `ubuntu-latest` | `app-release.apk` + `app-release.aab` |
+| **Build Windows**  | `windows-latest` | zipped `flow_pomodoro.exe` bundle |
+| **Build Linux**    | `ubuntu-latest` | `flow_pomodoro-linux-x64.tar.gz` |
+
+On a tag push (e.g. `0.0.2`) the **Release** job additionally:
+1. Downloads all built artifacts
+2. Renames them with the tag and commits them to `release/<tag>/` on the default branch
+3. Publishes a GitHub Release with auto-generated notes and the same files attached
+
+Workflow source: [`.github/workflows/build.yml`](.github/workflows/build.yml)
+All releases: <https://github.com/yili6ms/flow_pomodoro/releases>
 
 ## Testing
 
 ```bash
 cd flow_pomodoro
-flutter test       # 40 tests across models, providers, timer logic, widget smoke
+flutter test       # 43 tests across models, providers, timer logic, widget smoke
 flutter analyze    # clean
 ```
 
@@ -172,4 +202,6 @@ See [`flow_pomodoro_app_product_spec_design_doc.md`](../flow_pomodoro_app_produc
 
 ## License
 
-TBD — add a license before publishing.
+Released under the [MIT License](LICENSE) — Copyright © 2026 Alex Li.
+
+You're free to use, modify, and distribute this software, including for commercial purposes, provided the copyright notice and license text are preserved.
