@@ -89,10 +89,12 @@ GitHub Actions runs on every push and PR to `master`/`main`:
 | **Build Windows**  | `windows-latest` | zipped `flow_pomodoro.exe` bundle |
 | **Build Linux**    | `ubuntu-latest` | `flow_pomodoro-linux-x64.tar.gz` |
 
-On a tag push (e.g. `0.0.2`) the **Release** job additionally:
+On a tag push (e.g. `0.0.5`) the **Release** job additionally:
 1. Downloads all built artifacts
-2. Renames them with the tag and commits them to `release/<tag>/` on the default branch
-3. Publishes a GitHub Release with auto-generated notes and the same files attached
+2. Renames them with the tag (`flow_pomodoro-<tag>.apk`, `…-windows.zip`, `…-linux-x64.tar.gz`)
+3. Publishes a GitHub Release with auto-generated notes and the binaries attached as Release assets
+
+Binaries are **not** committed to the repo (the `release/` directory is in `.gitignore`); they live on the [Releases page](https://github.com/yili6ms/flow_pomodoro/releases) only.
 
 Workflow source: [`.github/workflows/build.yml`](.github/workflows/build.yml)
 All releases: <https://github.com/yili6ms/flow_pomodoro/releases> — see [`CHANGELOG.md`](CHANGELOG.md) for the full release history.
