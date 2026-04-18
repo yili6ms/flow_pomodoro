@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import '../models/flow_animation_style.dart';
 import '../theme/app_theme.dart';
-import 'flow_orb.dart';
+import 'flow_visual.dart';
 
 /// Flow Gate transition: expanding/contracting circle with fade-in guidance.
 /// Plays once, then calls [onComplete].
@@ -8,12 +9,18 @@ class FlowEntryOverlay extends StatefulWidget {
   final String guidance;
   final VoidCallback onComplete;
   final bool reduceMotion;
+  final FlowAnimationStyle style;
+  final Color? accentColor;
+  final Color? accentGlow;
 
   const FlowEntryOverlay({
     super.key,
     required this.guidance,
     required this.onComplete,
     this.reduceMotion = false,
+    this.style = FlowAnimationStyle.orb,
+    this.accentColor,
+    this.accentGlow,
   });
 
   @override
@@ -61,11 +68,15 @@ class _FlowEntryOverlayState extends State<FlowEntryOverlay>
               children: [
                 Transform.scale(
                   scale: s,
-                  child: const FlowOrb(
+                  child: FlowVisual(
+                    style: widget.style,
                     size: 200,
                     isFocus: true,
                     isBreak: false,
                     flowStage: 'initiation',
+                    reduceMotion: widget.reduceMotion,
+                    accentColor: widget.accentColor,
+                    accentGlow: widget.accentGlow,
                   ),
                 ),
                 const SizedBox(height: 36),

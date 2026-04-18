@@ -285,6 +285,9 @@ class _FocusSessionScreenState extends State<FocusSessionScreen> {
             FlowEntryOverlay(
               guidance: l.enterTheFlow,
               reduceMotion: settings.reduceMotion,
+              style: settings.animationStyle,
+              accentColor: accent.primary,
+              accentGlow: accent.glow,
               onComplete: () => setState(() => _showEntry = false),
             ),
         ],
