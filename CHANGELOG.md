@@ -5,6 +5,30 @@ Tags follow `MAJOR.MINOR.PATCH` (no `v` prefix). Each release also has signed bi
 
 ---
 
+## 0.0.5 — 2026-04-18
+
+A small release with one big visual change and a repo-hygiene cleanup.
+
+### ✨ New
+- **Full-screen flow animation in focus sessions.** The Orb / Wave / Particles / Fireworks visualization now fills the entire screen behind the timer instead of sitting in a 260 px box. The progress ring, timer text, intent, and round labels float on top; the aurora gradient still provides the deep backdrop. Looks especially great in Hybrid accent.
+
+### 🛠️ Internal
+- Stop committing CI-built release binaries back to the repo. Binaries are still attached to the [GitHub Release](https://github.com/yili6ms/flow_pomodoro/releases) for each tag — they're just no longer mirrored into `release/<tag>/` on `master`. Keeps clones small. `release/` is now in `.gitignore`.
+
+### 🧪 Quality
+- `flutter analyze`: 0 issues
+- `flutter test`: **43 / 43 passing**
+
+### 📥 Downloads
+Attached directly to this release on GitHub:
+- **Android** — `flow_pomodoro-0.0.5.apk` (or `.aab`)
+- **Windows** — `flow_pomodoro-0.0.5-windows.zip`
+- **Linux** — `flow_pomodoro-0.0.5-linux-x64.tar.gz` (requires `libgstreamer1.0-0` + `libgstreamer-plugins-base1.0-0`)
+
+**Full changelog:** [`0.0.4...0.0.5`](https://github.com/yili6ms/flow_pomodoro/compare/0.0.4...0.0.5)
+
+---
+
 ## 0.0.4 — 2026-04-18
 
 A bug-fix release focused on faithful stats and a seamless focus entry.
