@@ -5,6 +5,26 @@ Tags follow `MAJOR.MINOR.PATCH` (no `v` prefix). Each release also has signed bi
 
 ---
 
+## 0.0.7 — 2026-04-19
+
+iOS support arrives. The app now builds and runs on iPhone/iPad alongside Android, Windows, and Linux.
+
+### 📱 New platform: iOS
+- **iOS Runner project** generated under `ios/` (bundle id `com.flowpomodoro.flowPomodoro`, deployment target **iOS 13.0**, Swift + scene-based lifecycle).
+- **Localization metadata** (`CFBundleLocalizations`) declares the app's supported locales (`en`, `zh`) so iOS surfaces the correct language at install time.
+- **Profile build wired up.** Added `ios/Flutter/Profile.xcconfig` and pointed the Runner Profile configuration at it, so `flutter build ios --profile` and CocoaPods integrate cleanly with no "base configuration" warnings.
+
+### 🤖 CI / Releases
+- **New `build-ios` job** on `macos-latest` runs `flutter build ios --release --no-codesign` and packages an unsigned `.ipa` (zipped `Payload/Runner.app`) for sideloading.
+- **GitHub Releases** now attach `flow_pomodoro-<tag>-ios.ipa` alongside the Android APK/AAB, Windows zip, and Linux tarball.
+
+### 📥 Downloads
+Grab the binaries from the [GitHub Release page](https://github.com/yili6ms/flow_pomodoro/releases/tag/0.0.7).
+
+Full changelog: [`0.0.6...0.0.7`](https://github.com/yili6ms/flow_pomodoro/compare/0.0.6...0.0.7)
+
+---
+
 ## 0.0.6 — 2026-04-18
 
 A foundational release: focus session history now lives in **SQLite** behind a clean storage abstraction, so future features (tags, search, sync, longer history) won't be bottlenecked by JSON-in-SharedPreferences.

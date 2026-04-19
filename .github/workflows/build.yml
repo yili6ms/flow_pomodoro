@@ -164,13 +164,50 @@ jobs:
           if-no-files-found: error
 
   # ---------------------------------------------------------------------------
+  # iOS unsigned .ipa (built on macOS, no code signing — for sideloading/testing)
+  # ---------------------------------------------------------------------------
+  build-ios:
+    name: Build iOS
+    needs: analyze-test
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Build iOS (release, no codesign)
+        run: flutter build ios --release --no-codesign
+
+      - name: Package unsigned IPA
+        working-directory: build/ios/iphoneos
+        run: |
+          mkdir -p Payload
+          cp -R Runner.app Payload/
+          zip -qr flow_pomodoro-ios.ipa Payload
+          ls -lh flow_pomodoro-ios.ipa
+
+      - name: Upload iOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flow_pomodoro-ios
+          path: build/ios/iphoneos/flow_pomodoro-ios.ipa
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
   # On tag push (vX.Y.Z): publish all artifacts to a GitHub Release AND
   # commit them to release/<tag>/ on the default branch.
   # ---------------------------------------------------------------------------
   release:
     name: Release
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [build-android, build-windows, build-linux]
+    needs: [build-android, build-windows, build-linux, build-ios]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -197,6 +234,7 @@ jobs:
           cp artifacts/flow_pomodoro-windows/flow_pomodoro-windows.zip  "$DEST/flow_pomodoro-${TAG}-windows.zip"
           cp artifacts/flow_pomodoro-linux-x64/flow_pomodoro-linux-x64.tar.gz \
                                                                        "$DEST/flow_pomodoro-${TAG}-linux-x64.tar.gz"
+          cp artifacts/flow_pomodoro-ios/flow_pomodoro-ios.ipa         "$DEST/flow_pomodoro-${TAG}-ios.ipa"
           ls -lh "$DEST"
 
       # Binaries are attached to the GitHub Release below; we deliberately do
@@ -212,3 +250,4 @@ jobs:
             release/${{ github.ref_name }}/flow_pomodoro-${{ github.ref_name }}.aab
             release/${{ github.ref_name }}/flow_pomodoro-${{ github.ref_name }}-windows.zip
             release/${{ github.ref_name }}/flow_pomodoro-${{ github.ref_name }}-linux-x64.tar.gz
+            release/${{ github.ref_name }}/flow_pomodoro-${{ github.ref_name }}-ios.ipa
