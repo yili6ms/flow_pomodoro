@@ -8,9 +8,9 @@ Pomodoro timer · Lightweight tasks · Calm animations · Local-only & private
 
 [![Build](https://github.com/yili6ms/flow_pomodoro/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/yili6ms/flow_pomodoro/actions/workflows/build.yml)
 [![Latest release](https://img.shields.io/github/v/release/yili6ms/flow_pomodoro?display_name=tag&sort=semver)](https://github.com/yili6ms/flow_pomodoro/releases/latest)
-[![Tests](https://img.shields.io/badge/tests-43%20passing-brightgreen)](#testing)
+[![Tests](https://img.shields.io/badge/tests-58%20passing-brightgreen)](#testing)
 [![Flutter](https://img.shields.io/badge/Flutter-3.41-02569B?logo=flutter)](https://flutter.dev)
-[![Platforms](https://img.shields.io/badge/platforms-Android%20%7C%20Windows%20%7C%20Linux-blueviolet)](#platforms)
+[![Platforms](https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows%20%7C%20Linux-blueviolet)](#platforms)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
 
 </div>
@@ -38,20 +38,20 @@ The experience adapts across 5 phases — **pre-focus → initiation → stabili
 
 ## Platforms
 
-| Platform | Status     | Output                     |
-|----------|------------|----------------------------|
-| Android  | ✅ Built    | `app-release.apk` / `.aab` |
-| Windows  | ✅ Built    | `flow_pomodoro.exe`        |
-| Linux    | ✅ Built    | bundle (`tar.gz`)          |
-| iOS      | ⛔ Not enabled | —                          |
-| macOS / Web | ⛔ Not enabled | —                       |
+| Platform | Status     | Output                                    |
+|----------|------------|-------------------------------------------|
+| Android  | ✅ Built    | `app-release.apk` / `.aab`                |
+| iOS      | ✅ Built    | unsigned `.ipa` (sideload-ready)          |
+| Windows  | ✅ Built    | `flow_pomodoro.exe`                       |
+| Linux    | ✅ Built    | bundle (`tar.gz`)                         |
+| macOS / Web | ⛔ Not enabled | —                                    |
 
 ## Quick start
 
 ```bash
 cd flow_pomodoro
 flutter pub get
-flutter run -d windows         # or: -d android, -d linux
+flutter run -d windows         # or: -d android, -d ios, -d linux
 ```
 
 ## Build
@@ -60,6 +60,9 @@ flutter run -d windows         # or: -d android, -d linux
 # Android
 flutter build apk --release
 flutter build appbundle --release
+
+# iOS (run on macOS; --no-codesign produces an unsigned build for sideloading)
+flutter build ios --release --no-codesign
 
 # Windows
 flutter build windows --release
@@ -84,14 +87,15 @@ GitHub Actions runs on every push and PR to `master`/`main`:
 
 | Job | Runner | Output |
 |-----|--------|--------|
-| **Analyze & Test** | `ubuntu-latest` | `flutter analyze` + 43 tests |
+| **Analyze & Test** | `ubuntu-latest` | `flutter analyze` + 58 tests |
 | **Build Android**  | `ubuntu-latest` | `app-release.apk` + `app-release.aab` |
+| **Build iOS**      | `macos-latest` | unsigned `flow_pomodoro-ios.ipa` |
 | **Build Windows**  | `windows-latest` | zipped `flow_pomodoro.exe` bundle |
 | **Build Linux**    | `ubuntu-latest` | `flow_pomodoro-linux-x64.tar.gz` |
 
 On a tag push (e.g. `0.0.6`) the **Release** job additionally:
 1. Downloads all built artifacts
-2. Renames them with the tag (`flow_pomodoro-<tag>.apk`, `…-windows.zip`, `…-linux-x64.tar.gz`)
+2. Renames them with the tag (`flow_pomodoro-<tag>.apk`, `…-ios.ipa`, `…-windows.zip`, `…-linux-x64.tar.gz`)
 3. Publishes a GitHub Release with auto-generated notes and the binaries attached as Release assets
 
 Binaries are **not** committed to the repo (the `release/` directory is in `.gitignore`); they live on the [Releases page](https://github.com/yili6ms/flow_pomodoro/releases) only.
@@ -103,7 +107,7 @@ All releases: <https://github.com/yili6ms/flow_pomodoro/releases> — see [`CHAN
 
 ```bash
 cd flow_pomodoro
-flutter test       # 43 tests across models, providers, timer logic, widget smoke
+flutter test       # 58 tests across models, providers, session store, timer logic, widget smoke
 flutter analyze    # clean
 ```
 
@@ -184,14 +188,16 @@ The orb design uses the brand palette: dark canvas `#0F1115` with a coral `#FF7A
 
 - **No network access** — there is no `INTERNET` permission on Android, no network code anywhere
 - **No analytics, no crash reporting, no remote config**
-- **All data stored locally** via `shared_preferences` (Android: app sandbox; Windows: registry; Linux: `~/.config/`)
+- **All data stored locally** — settings/tasks via `shared_preferences`, focus session history via SQLite (`flow_pomodoro.db` in the app's documents directory)
 - **Defensive deserialization** — corrupt or tampered storage degrades gracefully (logs + reset) rather than crashing
 
 ## Tech stack
 
 - [Flutter](https://flutter.dev) 3.41 / Dart 3.11
 - [provider](https://pub.dev/packages/provider) — state management
-- [shared_preferences](https://pub.dev/packages/shared_preferences) — local persistence
+- [shared_preferences](https://pub.dev/packages/shared_preferences) — local persistence (settings/tasks)
+- [sqflite](https://pub.dev/packages/sqflite) + [sqflite_common_ffi](https://pub.dev/packages/sqflite_common_ffi) — SQLite-backed session history (mobile + desktop)
+- [audioplayers](https://pub.dev/packages/audioplayers) — looping white-noise playback
 - [fake_async](https://pub.dev/packages/fake_async) — deterministic timer tests
 - [image](https://pub.dev/packages/image) — programmatic asset generation
 - [flutter_launcher_icons](https://pub.dev/packages/flutter_launcher_icons), [flutter_native_splash](https://pub.dev/packages/flutter_native_splash)
