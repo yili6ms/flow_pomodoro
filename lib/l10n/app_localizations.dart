@@ -524,6 +524,24 @@ abstract class AppLocalizations {
   /// **'Haptic feedback'**
   String get haptics;
 
+  /// No description provided for @notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// No description provided for @notificationsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert when focus or break time ends'**
+  String get notificationsSubtitle;
+
+  /// No description provided for @notificationsDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are disabled in system settings.'**
+  String get notificationsDenied;
+
   /// No description provided for @theme.
   ///
   /// In en, this message translates to:

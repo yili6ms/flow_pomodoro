@@ -246,6 +246,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get haptics => 'Haptic feedback';
 
   @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get notificationsSubtitle => 'Alert when focus or break time ends';
+
+  @override
+  String get notificationsDenied =>
+      'Notifications are disabled in system settings.';
+
+  @override
   String get theme => 'Theme';
 
   @override

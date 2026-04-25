@@ -242,6 +242,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get haptics => '触感反馈';
 
   @override
+  String get notifications => '通知';
+
+  @override
+  String get notificationsSubtitle => '专注或休息结束时提醒';
+
+  @override
+  String get notificationsDenied => '系统设置中已关闭通知权限。';
+
+  @override
   String get theme => '主题';
 
   @override

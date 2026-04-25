@@ -6,6 +6,7 @@ import '../models/accent_color.dart';
 import '../models/flow_animation_style.dart';
 import '../models/white_noise.dart';
 import '../providers/settings_provider.dart';
+import '../services/notification_scheduler.dart';
 import '../theme/app_theme.dart';
 import '../widgets/aurora_background.dart';
 
@@ -80,6 +81,16 @@ class SettingsScreen extends StatelessWidget {
               title: Text(l.haptics),
               value: s.haptics,
               onChanged: s.setHaptics,
+            ),
+            SwitchListTile(
+              title: Text(l.notifications),
+              subtitle: Text(l.notificationsSubtitle),
+              value: s.notificationsEnabled,
+              onChanged: (enabled) => _setNotifications(
+                context: context,
+                settings: s,
+                enabled: enabled,
+              ),
             ),
             ListTile(
               title: Text(l.theme),
@@ -259,6 +270,30 @@ class SettingsScreen extends StatelessWidget {
             style: const TextStyle(
                 fontSize: 12, letterSpacing: 1.2, color: Colors.grey)),
       );
+
+  Future<void> _setNotifications({
+    required BuildContext context,
+    required SettingsProvider settings,
+    required bool enabled,
+  }) async {
+    final l = AppLocalizations.of(context);
+    final notifications = context.read<NotificationScheduler>();
+    if (!enabled) {
+      await notifications.cancelPhaseComplete();
+      await settings.setNotificationsEnabled(false);
+      return;
+    }
+
+    final allowed = await notifications.requestPermissions();
+    if (!context.mounted) return;
+    if (!allowed) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l.notificationsDenied)));
+      return;
+    }
+    await settings.setNotificationsEnabled(true);
+  }
 }
 
 class _NumberTile extends StatelessWidget {

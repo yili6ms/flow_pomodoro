@@ -30,6 +30,7 @@ The experience adapts across 5 phases — **pre-focus → initiation → stabili
 - 🎨 **4 selectable animation styles** — Orb · Wave · Particles · Fireworks
 - 🌈 **6 accent colors** — Coral · Violet · Emerald · Gold · Sky · Rose
 - 🔊 **White noise loops** — Off · White · Pink · Brown · Rain · Campfire · River · Ocean (procedurally generated, with volume control)
+- 🔔 **Local notifications** — optional focus/break completion alerts, scheduled locally
 - ✅ **Lightweight tasks** — quick add, set active, track pomodoros per task (no project hierarchies, no clutter)
 - 📊 **Statistics** — today / total / 7-day trend / focus-by-time-of-day distribution
 - 🌓 **Themes** — system / light / dark
@@ -166,6 +167,7 @@ UI chrome (round counter, task title, controls) also fades during deep flow so t
 
 - **Reduce motion** clamps animation intensity to 0.3 globally and shortens the Flow Gate transition.
 - **Haptics** can be disabled (off by default in tests).
+- **Notifications** are optional and request OS permission only when enabled.
 - **High contrast** is implicitly supported via the dark theme.
 
 ## Branding & assets
@@ -184,7 +186,8 @@ The orb design uses the brand palette: dark canvas `#0F1115` with a coral `#FF7A
 
 - **No network access** — there is no `INTERNET` permission on Android, no network code anywhere
 - **No analytics, no crash reporting, no remote config**
-- **All data stored locally** via `shared_preferences` (Android: app sandbox; Windows: registry; Linux: `~/.config/`)
+- **All data stored locally** via `shared_preferences` and SQLite session storage
+- **Notifications are local-only** — completion alerts are scheduled on device, not sent through a server
 - **Defensive deserialization** — corrupt or tampered storage degrades gracefully (logs + reset) rather than crashing
 
 ## Tech stack

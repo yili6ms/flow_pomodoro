@@ -26,6 +26,7 @@ void main() {
       expect(s.autoSwitch, false);
       expect(s.reduceMotion, false);
       expect(s.haptics, true);
+      expect(s.notificationsEnabled, false);
       expect(s.onboarded, false);
       expect(s.themeMode, ThemeMode.dark);
     });
@@ -36,6 +37,7 @@ void main() {
       await s1.setFocusMinutes(45);
       await s1.setAutoSwitch(true);
       await s1.setThemeMode(ThemeMode.light);
+      await s1.setNotificationsEnabled(true);
       await s1.setOnboarded(true);
 
       final s2 = SettingsProvider();
@@ -43,6 +45,7 @@ void main() {
       expect(s2.focusMinutes, 45);
       expect(s2.autoSwitch, true);
       expect(s2.themeMode, ThemeMode.light);
+      expect(s2.notificationsEnabled, true);
       expect(s2.onboarded, true);
     });
 

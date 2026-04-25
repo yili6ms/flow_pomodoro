@@ -11,6 +11,8 @@ import 'providers/timer_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/welcome_screen.dart';
+import 'services/notification_scheduler.dart';
+import 'services/notification_service.dart';
 import 'services/session_store_init.dart';
 import 'theme/app_theme.dart';
 
@@ -23,7 +25,15 @@ Future<void> main() async {
   final stats = StatsProvider(store: sessionStore);
   await Future.wait([settings.load(), tasks.load(), stats.load()]);
 
-  final timer = TimerProvider(settings: settings, tasks: tasks, stats: stats);
+  final notifications = NotificationService(settings: settings);
+  await notifications.init();
+
+  final timer = TimerProvider(
+    settings: settings,
+    tasks: tasks,
+    stats: stats,
+    notifications: notifications,
+  );
 
   // Owns the ambient white-noise loop. Listens to settings + timer; no
   // explicit lifecycle wiring needed beyond construction.
@@ -43,6 +53,7 @@ Future<void> main() async {
     stats: stats,
     timer: timer,
     hybridTicker: hybridTicker,
+    notifications: notifications,
   ));
 }
 
@@ -52,6 +63,7 @@ class FlowPomodoroApp extends StatelessWidget {
   final StatsProvider stats;
   final TimerProvider timer;
   final HybridAccentTicker hybridTicker;
+  final NotificationScheduler notifications;
 
   /// When true, skips the animated [SplashScreen] and shows the destination
   /// screen directly. Used by widget tests so they don't have to wait for
@@ -65,6 +77,7 @@ class FlowPomodoroApp extends StatelessWidget {
     required this.stats,
     required this.timer,
     required this.hybridTicker,
+    this.notifications = const NoopNotificationScheduler(),
     this.skipSplash = false,
   });
 
@@ -77,6 +90,7 @@ class FlowPomodoroApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: stats),
         ChangeNotifierProvider.value(value: timer),
         ChangeNotifierProvider.value(value: hybridTicker),
+        Provider<NotificationScheduler>.value(value: notifications),
       ],
       child: Consumer<SettingsProvider>(
         builder: (context, s, _) {

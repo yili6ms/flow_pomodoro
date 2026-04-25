@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/session.dart';
+import '../services/notification_scheduler.dart';
 import 'settings_provider.dart';
 import 'stats_provider.dart';
 import 'task_provider.dart';
@@ -14,11 +15,13 @@ class TimerProvider extends ChangeNotifier {
   final SettingsProvider settings;
   final TaskProvider tasks;
   final StatsProvider stats;
+  final NotificationScheduler? notifications;
 
   TimerProvider({
     required this.settings,
     required this.tasks,
     required this.stats,
+    this.notifications,
   });
 
   TimerPhase phase = TimerPhase.idle;
@@ -66,6 +69,7 @@ class TimerProvider extends ChangeNotifier {
     status = TimerStatus.running;
     _phaseStartedAt = DateTime.now();
     _startTicker();
+    _schedulePhaseComplete();
     _haptic(HapticFeedback.lightImpact);
     notifyListeners();
   }
@@ -78,6 +82,7 @@ class TimerProvider extends ChangeNotifier {
     status = TimerStatus.running;
     _phaseStartedAt = DateTime.now();
     _startTicker();
+    _schedulePhaseComplete();
     notifyListeners();
   }
 
@@ -85,6 +90,7 @@ class TimerProvider extends ChangeNotifier {
     if (status != TimerStatus.running) return;
     status = TimerStatus.paused;
     _ticker?.cancel();
+    unawaited(notifications?.cancelPhaseComplete());
     notifyListeners();
   }
 
@@ -92,11 +98,13 @@ class TimerProvider extends ChangeNotifier {
     if (status != TimerStatus.paused) return;
     status = TimerStatus.running;
     _startTicker();
+    _schedulePhaseComplete();
     notifyListeners();
   }
 
   void stop({bool record = true}) {
     _ticker?.cancel();
+    unawaited(notifications?.cancelPhaseComplete());
     if (record && phase == TimerPhase.focus && _phaseStartedAt != null) {
       _recordSession(completed: false);
     }
@@ -129,6 +137,7 @@ class TimerProvider extends ChangeNotifier {
 
   Future<void> _onPhaseComplete() async {
     _ticker?.cancel();
+    await notifications?.cancelPhaseComplete();
     _haptic(HapticFeedback.mediumImpact);
     if (phase == TimerPhase.focus) {
       _recordSession(completed: true);
@@ -161,6 +170,21 @@ class TimerProvider extends ChangeNotifier {
         notifyListeners();
       }
     }
+  }
+
+  void _schedulePhaseComplete() {
+    if (status != TimerStatus.running || phase == TimerPhase.idle) return;
+    final scheduler = notifications;
+    if (scheduler == null) return;
+    unawaited(scheduler.schedulePhaseComplete(
+      phase: switch (phase) {
+        TimerPhase.focus => NotificationPhase.focus,
+        TimerPhase.shortBreak => NotificationPhase.shortBreak,
+        TimerPhase.longBreak => NotificationPhase.longBreak,
+        TimerPhase.idle => NotificationPhase.idle,
+      },
+      remaining: Duration(seconds: remainingSeconds),
+    ));
   }
 
   void _recordSession({required bool completed}) {

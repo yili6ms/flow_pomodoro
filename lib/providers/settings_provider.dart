@@ -13,6 +13,7 @@ class SettingsProvider extends ChangeNotifier {
   static const _kThemeMode = 'settings.themeMode'; // 'system'|'light'|'dark'
   static const _kReduceMotion = 'settings.reduceMotion';
   static const _kHaptics = 'settings.haptics';
+  static const _kNotifications = 'settings.notifications';
   static const _kOnboarded = 'settings.onboarded';
   static const _kAnimStyle = 'settings.animationStyle';
   static const _kAccent = 'settings.accentColor';
@@ -27,6 +28,7 @@ class SettingsProvider extends ChangeNotifier {
   bool autoSwitch = false;
   bool reduceMotion = false;
   bool haptics = true;
+  bool notificationsEnabled = false;
   bool onboarded = false;
   ThemeMode themeMode = ThemeMode.dark;
   FlowAnimationStyle animationStyle = FlowAnimationStyle.orb;
@@ -55,6 +57,7 @@ class SettingsProvider extends ChangeNotifier {
     autoSwitch = _prefs.getBool(_kAutoSwitch) ?? false;
     reduceMotion = _prefs.getBool(_kReduceMotion) ?? false;
     haptics = _prefs.getBool(_kHaptics) ?? true;
+    notificationsEnabled = _prefs.getBool(_kNotifications) ?? false;
     onboarded = _prefs.getBool(_kOnboarded) ?? false;
     final tm = _prefs.getString(_kThemeMode) ?? 'dark';
     themeMode = switch (tm) {
@@ -111,6 +114,12 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> setHaptics(bool v) async {
     haptics = v;
     await _prefs.setBool(_kHaptics, v);
+    notifyListeners();
+  }
+
+  Future<void> setNotificationsEnabled(bool v) async {
+    notificationsEnabled = v;
+    await _prefs.setBool(_kNotifications, v);
     notifyListeners();
   }
 
