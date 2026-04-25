@@ -23,6 +23,7 @@ class FocusSessionScreen extends StatefulWidget {
 
 class _FocusSessionScreenState extends State<FocusSessionScreen> {
   bool _showEntry = true;
+  String? _shownSummaryId;
 
   @override
   void initState() {
@@ -103,6 +104,15 @@ class _FocusSessionScreenState extends State<FocusSessionScreen> {
     final accent = context.liveAccent();
     final color = isBreak ? FlowColors.breakPrimary : accent.primary;
     final l = AppLocalizations.of(context);
+    final summary = timer.lastSessionSummary;
+    if (summary != null &&
+        summary.completed &&
+        _shownSummaryId != summary.id) {
+      _shownSummaryId = summary.id;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _showCompletionSummary(context);
+      });
+    }
 
     // UI fades as focus deepens (per design spec)
     double uiOpacity = 1.0;
@@ -304,6 +314,81 @@ class _FocusSessionScreenState extends State<FocusSessionScreen> {
       ),
       ),
     );
+  }
+
+  Future<void> _showCompletionSummary(BuildContext context) async {
+    final timer = context.read<TimerProvider>();
+    final settings = context.read<SettingsProvider>();
+    final accent = context.liveAccent();
+    final l = AppLocalizations.of(context);
+    final session = timer.lastSessionSummary;
+    if (session == null) return;
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: FlowColors.bgDarkSoft,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text(l.flowBloomTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0.6, end: 1),
+              duration: Duration(
+                milliseconds: settings.reduceMotion ? 250 : 900,
+              ),
+              curve: Curves.easeOutCubic,
+              builder: (_, value, child) => Transform.scale(
+                scale: value,
+                child: Opacity(opacity: value.clamp(0.0, 1.0), child: child),
+              ),
+              child: Container(
+                width: 84,
+                height: 84,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: accent.primary.withValues(alpha: 0.16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: accent.glow.withValues(alpha: 0.45),
+                      blurRadius: 32,
+                      spreadRadius: 4,
+                    ),
+                  ],
+                ),
+                child: Icon(Icons.check_rounded,
+                    color: accent.primary, size: 42),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              l.flowBloomBody,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: FlowColors.textMuted),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              l.sessionSummaryFocusTime(
+                formatFocusDuration(context, session.durationSeconds),
+              ),
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l.continueToBreak),
+          ),
+        ],
+      ),
+    );
+
+    if (mounted) {
+      timer.clearSessionSummary();
+    }
   }
 }
 

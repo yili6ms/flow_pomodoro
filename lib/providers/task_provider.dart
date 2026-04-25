@@ -14,6 +14,8 @@ class TaskProvider extends ChangeNotifier {
   List<Task> get tasks => List.unmodifiable(_tasks);
   List<Task> get activeTasks =>
       _tasks.where((t) => !t.archived).toList(growable: false);
+  List<Task> get archivedTasks =>
+      _tasks.where((t) => t.archived).toList(growable: false);
   String? get activeTaskId => _activeTaskId;
   Task? get activeTask {
     if (_activeTaskId == null) return null;
@@ -87,6 +89,29 @@ class TaskProvider extends ChangeNotifier {
   Future<void> deleteTask(String id) async {
     _tasks.removeWhere((t) => t.id == id);
     if (_activeTaskId == id) _activeTaskId = null;
+    await _save();
+    notifyListeners();
+  }
+
+  Future<void> archiveTask(String id) async {
+    for (final t in _tasks) {
+      if (t.id == id) {
+        t.archived = true;
+        break;
+      }
+    }
+    if (_activeTaskId == id) _activeTaskId = null;
+    await _save();
+    notifyListeners();
+  }
+
+  Future<void> unarchiveTask(String id) async {
+    for (final t in _tasks) {
+      if (t.id == id) {
+        t.archived = false;
+        break;
+      }
+    }
     await _save();
     notifyListeners();
   }

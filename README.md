@@ -10,7 +10,7 @@ Pomodoro timer · Lightweight tasks · Calm animations · Local-only & private
 [![Latest release](https://img.shields.io/github/v/release/yili6ms/flow_pomodoro?display_name=tag&sort=semver)](https://github.com/yili6ms/flow_pomodoro/releases/latest)
 [![Tests](https://img.shields.io/badge/tests-58%20passing-brightgreen)](#testing)
 [![Flutter](https://img.shields.io/badge/Flutter-3.41-02569B?logo=flutter)](https://flutter.dev)
-[![Platforms](https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows%20%7C%20Linux-blueviolet)](#platforms)
+[![Platforms](https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows%20%7C%20Linux%20%7C%20macOS%20%7C%20Web-blueviolet)](#platforms)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
 
 </div>
@@ -25,13 +25,14 @@ The experience adapts across 5 phases — **pre-focus → initiation → stabili
 
 ## Features
 
-- ⏱️ **Pomodoro timer** — 25/5/15 default with custom durations, auto-switch, configurable rounds before long break
+- ⏱️ **Pomodoro timer** — 25/5/15 default with custom durations, auto-switch, configurable rounds, restore after restart
 - 🌬️ **Flow Gate transition** — short breathing animation + intent-setting microcopy before each session
 - 🎨 **4 selectable animation styles** — Orb · Wave · Particles · Fireworks
 - 🌈 **6 accent colors** — Coral · Violet · Emerald · Gold · Sky · Rose
 - 🔊 **White noise loops** — Off · White · Pink · Brown · Rain · Campfire · River · Ocean (procedurally generated, with volume control)
 - 🔔 **Local notifications** — optional focus/break completion alerts, scheduled locally
-- ✅ **Lightweight tasks** — quick add, set active, track pomodoros per task (no project hierarchies, no clutter)
+- ✅ **Lightweight tasks** — quick add, set active, archive/restore, track pomodoros per task (no project hierarchies, no clutter)
+- 🌸 **Completion summary** — soft Flow Bloom with focus-time recap
 - 📊 **Statistics** — today / total / 7-day trend / focus-by-time-of-day distribution
 - 🌓 **Themes** — system / light / dark
 - ♿ **Accessibility** — reduce-motion toggle, optional haptics
@@ -45,14 +46,15 @@ The experience adapts across 5 phases — **pre-focus → initiation → stabili
 | iOS      | ✅ Built    | unsigned `.ipa` (sideload-ready)          |
 | Windows  | ✅ Built    | `flow_pomodoro.exe`                       |
 | Linux    | ✅ Built    | bundle (`tar.gz`)                         |
-| macOS / Web | ⛔ Not enabled | —                                    |
+| macOS    | ✅ Built in CI | zipped `.app` bundle                   |
+| Web      | ✅ Built    | static web bundle                         |
 
 ## Quick start
 
 ```bash
 cd flow_pomodoro
 flutter pub get
-flutter run -d windows         # or: -d android, -d ios, -d linux
+flutter run -d windows         # or: -d android, -d ios, -d linux, -d chrome
 ```
 
 ## Build
@@ -70,6 +72,12 @@ flutter build windows --release
 
 # Linux (run on a Linux host with deps below — see CI workflow for the exact list)
 flutter build linux --release
+
+# macOS (run on macOS)
+flutter build macos --release
+
+# Web
+flutter build web --release
 ```
 
 > **Linux build deps** (Debian/Ubuntu):
@@ -93,10 +101,12 @@ GitHub Actions runs on every push and PR to `master`/`main`:
 | **Build iOS**      | `macos-latest` | unsigned `flow_pomodoro-ios.ipa` |
 | **Build Windows**  | `windows-latest` | zipped `flow_pomodoro.exe` bundle |
 | **Build Linux**    | `ubuntu-latest` | `flow_pomodoro-linux-x64.tar.gz` |
+| **Build macOS**    | `macos-latest` | zipped `.app` bundle |
+| **Build Web**      | `ubuntu-latest` | zipped static web bundle |
 
 On a tag push (e.g. `0.0.6`) the **Release** job additionally:
 1. Downloads all built artifacts
-2. Renames them with the tag (`flow_pomodoro-<tag>.apk`, `…-ios.ipa`, `…-windows.zip`, `…-linux-x64.tar.gz`)
+2. Renames them with the tag (`flow_pomodoro-<tag>.apk`, `…-ios.ipa`, `…-windows.zip`, `…-linux-x64.tar.gz`, `…-macos.zip`, `…-web.zip`)
 3. Publishes a GitHub Release with auto-generated notes and the binaries attached as Release assets
 
 Binaries are **not** committed to the repo (the `release/` directory is in `.gitignore`); they live on the [Releases page](https://github.com/yili6ms/flow_pomodoro/releases) only.

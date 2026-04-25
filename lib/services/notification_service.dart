@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
@@ -61,13 +59,13 @@ class NotificationService implements NotificationScheduler {
     await init();
     if (kIsWeb) return false;
 
-    if (Platform.isAndroid) {
+    if (defaultTargetPlatform == TargetPlatform.android) {
       final android = _plugin.resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>();
       return await android?.requestNotificationsPermission() ?? true;
     }
 
-    if (Platform.isIOS) {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
       final ios = _plugin.resolvePlatformSpecificImplementation<
           IOSFlutterLocalNotificationsPlugin>();
       return await ios?.requestPermissions(
@@ -78,7 +76,7 @@ class NotificationService implements NotificationScheduler {
           true;
     }
 
-    if (Platform.isMacOS) {
+    if (defaultTargetPlatform == TargetPlatform.macOS) {
       final mac = _plugin.resolvePlatformSpecificImplementation<
           MacOSFlutterLocalNotificationsPlugin>();
       return await mac?.requestPermissions(

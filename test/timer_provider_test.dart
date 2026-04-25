@@ -95,6 +95,8 @@ void main() {
         async.elapse(const Duration(minutes: 25));
         async.elapse(const Duration(seconds: 1));
         expect(t.currentRound, 1);
+        expect(t.lastSessionSummary?.completed, true);
+        expect(t.lastSessionSummary?.intent, 'finish');
         expect(t.stats.totalCompletedSessions, 1);
         expect(t.stats.totalFocusSeconds, 25 * 60);
         // Without autoSwitch, phase advances to shortBreak but stays stopped
@@ -102,6 +104,28 @@ void main() {
         expect(t.status, TimerStatus.stopped);
         expect(t.remainingSeconds, 5 * 60);
       });
+    });
+
+    test('restorePersistedState restores a running focus timer', () async {
+      final t1 = await _newTimer();
+      t1.startFocus(intent: 'restore me');
+      await Future<void>.delayed(Duration.zero);
+
+      final s = SettingsProvider();
+      await s.load();
+      final tasks = TaskProvider();
+      await tasks.load();
+      final stats = StatsProvider(store: InMemorySessionStore());
+      await stats.load();
+      final t2 = TimerProvider(settings: s, tasks: tasks, stats: stats);
+      await t2.restorePersistedState();
+
+      expect(t2.phase, TimerPhase.focus);
+      expect(t2.status, TimerStatus.running);
+      expect(t2.currentIntent, 'restore me');
+      expect(t2.remainingSeconds, greaterThan(0));
+      t1.stop(record: false);
+      t2.stop(record: false);
     });
 
     test('long break triggers every Nth round', () async {

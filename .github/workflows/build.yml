@@ -201,13 +201,82 @@ jobs:
           if-no-files-found: error
 
   # ---------------------------------------------------------------------------
+  # macOS .app bundle (zipped)
+  # ---------------------------------------------------------------------------
+  build-macos:
+    name: Build macOS
+    needs: analyze-test
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+
+      - name: Enable macOS desktop
+        run: flutter config --enable-macos-desktop
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Build macOS (release)
+        run: flutter build macos --release
+
+      - name: Package macOS release
+        working-directory: build/macos/Build/Products/Release
+        run: zip -qry flow_pomodoro-macos.zip flow_pomodoro.app
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flow_pomodoro-macos
+          path: build/macos/Build/Products/Release/flow_pomodoro-macos.zip
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # Web bundle
+  # ---------------------------------------------------------------------------
+  build-web:
+    name: Build Web
+    needs: analyze-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Build Web (release)
+        run: flutter build web --release
+
+      - name: Package Web release
+        working-directory: build
+        run: zip -qry flow_pomodoro-web.zip web
+
+      - name: Upload Web artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flow_pomodoro-web
+          path: build/flow_pomodoro-web.zip
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
   # On tag push (vX.Y.Z): publish all artifacts to a GitHub Release AND
   # commit them to release/<tag>/ on the default branch.
   # ---------------------------------------------------------------------------
   release:
     name: Release
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [build-android, build-windows, build-linux, build-ios]
+    needs: [build-android, build-windows, build-linux, build-ios, build-macos, build-web]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -235,6 +304,8 @@ jobs:
           cp artifacts/flow_pomodoro-linux-x64/flow_pomodoro-linux-x64.tar.gz \
                                                                        "$DEST/flow_pomodoro-${TAG}-linux-x64.tar.gz"
           cp artifacts/flow_pomodoro-ios/flow_pomodoro-ios.ipa         "$DEST/flow_pomodoro-${TAG}-ios.ipa"
+          cp artifacts/flow_pomodoro-macos/flow_pomodoro-macos.zip     "$DEST/flow_pomodoro-${TAG}-macos.zip"
+          cp artifacts/flow_pomodoro-web/flow_pomodoro-web.zip         "$DEST/flow_pomodoro-${TAG}-web.zip"
           ls -lh "$DEST"
 
       # Binaries are attached to the GitHub Release below; we deliberately do
@@ -251,3 +322,5 @@ jobs:
             release/${{ github.ref_name }}/flow_pomodoro-${{ github.ref_name }}-windows.zip
             release/${{ github.ref_name }}/flow_pomodoro-${{ github.ref_name }}-linux-x64.tar.gz
             release/${{ github.ref_name }}/flow_pomodoro-${{ github.ref_name }}-ios.ipa
+            release/${{ github.ref_name }}/flow_pomodoro-${{ github.ref_name }}-macos.zip
+            release/${{ github.ref_name }}/flow_pomodoro-${{ github.ref_name }}-web.zip

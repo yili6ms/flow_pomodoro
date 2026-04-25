@@ -72,46 +72,114 @@ class _TasksScreenState extends State<TasksScreen> {
                 ),
               ),
               Expanded(
-                child: tasks.activeTasks.isEmpty
+                child: tasks.tasks.isEmpty
                     ? Center(
-                        child: Text(l.noTasksYet,
-                            style: const TextStyle(color: FlowColors.textMuted)),
+                        child: Text(
+                          l.noTasksYet,
+                          style: const TextStyle(color: FlowColors.textMuted),
+                        ),
                       )
-                    : ListView.separated(
-                        itemCount: tasks.activeTasks.length,
-                        separatorBuilder: (_, _) => const Divider(
-                            height: 1, color: Colors.white10),
-                        itemBuilder: (_, i) {
-                          final t = tasks.activeTasks[i];
-                          final selected = t.id == tasks.activeTaskId;
-                          return ListTile(
-                            leading: Icon(
-                              selected
-                                  ? Icons.radio_button_checked
-                                  : Icons.radio_button_off,
-                              color: selected
-                                  ? accent.primary
-                                  : FlowColors.textMuted,
+                    : ListView(
+                        children: [
+                          for (final t in tasks.activeTasks)
+                            _TaskTile(
+                              taskId: t.id,
+                              title: t.title,
+                              pomodoros: t.completedPomodoros,
+                              selected: t.id == tasks.activeTaskId,
+                              archived: false,
                             ),
-                            title: Text(t.title),
-                            subtitle: Text(
-                                l.pomodorosCount(t.completedPomodoros),
-                                style: const TextStyle(
-                                    color: FlowColors.textMuted,
-                                    fontSize: 12)),
-                            onTap: () => tasks.setActive(t.id),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete_outline,
-                                  color: FlowColors.textMuted),
-                              onPressed: () => tasks.deleteTask(t.id),
+                          if (tasks.archivedTasks.isNotEmpty) ...[
+                            const Divider(height: 1, color: Colors.white10),
+                            ExpansionTile(
+                              title: Text(l.archivedTasks),
+                              iconColor: FlowColors.textMuted,
+                              collapsedIconColor: FlowColors.textMuted,
+                              children: [
+                                for (final t in tasks.archivedTasks)
+                                  _TaskTile(
+                                    taskId: t.id,
+                                    title: t.title,
+                                    pomodoros: t.completedPomodoros,
+                                    selected: false,
+                                    archived: true,
+                                  ),
+                              ],
                             ),
-                          );
-                        },
+                          ],
+                        ],
                       ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _TaskTile extends StatelessWidget {
+  final String taskId;
+  final String title;
+  final int pomodoros;
+  final bool selected;
+  final bool archived;
+
+  const _TaskTile({
+    required this.taskId,
+    required this.title,
+    required this.pomodoros,
+    required this.selected,
+    required this.archived,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tasks = context.read<TaskProvider>();
+    final accent = context.liveAccent();
+    final l = AppLocalizations.of(context);
+
+    return ListTile(
+      leading: Icon(
+        archived
+            ? Icons.archive_outlined
+            : selected
+                ? Icons.radio_button_checked
+                : Icons.radio_button_off,
+        color: selected ? accent.primary : FlowColors.textMuted,
+      ),
+      title: Text(
+        title,
+        style: archived
+            ? const TextStyle(
+                color: FlowColors.textMuted,
+                decoration: TextDecoration.lineThrough,
+              )
+            : null,
+      ),
+      subtitle: Text(
+        l.pomodorosCount(pomodoros),
+        style: const TextStyle(color: FlowColors.textMuted, fontSize: 12),
+      ),
+      onTap: archived ? null : () => tasks.setActive(taskId),
+      trailing: PopupMenuButton<String>(
+        onSelected: (value) {
+          switch (value) {
+            case 'archive':
+              tasks.archiveTask(taskId);
+            case 'unarchive':
+              tasks.unarchiveTask(taskId);
+            case 'delete':
+              tasks.deleteTask(taskId);
+          }
+        },
+        itemBuilder: (_) => [
+          if (archived)
+            PopupMenuItem(value: 'unarchive', child: Text(l.unarchiveTask))
+          else
+            PopupMenuItem(value: 'archive', child: Text(l.archiveTask)),
+          PopupMenuItem(value: 'delete', child: Text(l.deleteTask)),
+        ],
       ),
     );
   }

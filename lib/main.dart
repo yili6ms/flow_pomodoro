@@ -34,6 +34,7 @@ Future<void> main() async {
     stats: stats,
     notifications: notifications,
   );
+  await timer.restorePersistedState();
 
   // Owns the ambient white-noise loop. Listens to settings + timer; no
   // explicit lifecycle wiring needed beyond construction.

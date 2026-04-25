@@ -48,6 +48,10 @@
 
   "newTaskHint": "New task",
   "noTasksYet": "No tasks yet.",
+  "archivedTasks": "Archived tasks",
+  "archiveTask": "Archive",
+  "unarchiveTask": "Restore",
+  "deleteTask": "Delete",
   "pomodorosCount": "{n,plural, =0{No pomodoros}=1{1 pomodoro}other{{n} pomodoros}}",
   "@pomodorosCount": { "placeholders": { "n": { "type": "int" } } },
 
@@ -71,6 +75,11 @@
   "sessionEndedEarly": "Ended early",
   "sessionCompleted": "Completed",
   "sessionUntitled": "Focus",
+  "flowBloomTitle": "Flow complete",
+  "flowBloomBody": "You stayed with one thing.",
+  "sessionSummaryFocusTime": "Focus time: {duration}",
+  "@sessionSummaryFocusTime": { "placeholders": { "duration": { "type": "String" } } },
+  "continueToBreak": "Continue to break",
 
   "sectionTimer": "Timer",
   "sectionExperience": "Experience",

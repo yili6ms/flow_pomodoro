@@ -45,6 +45,10 @@
 
   "newTaskHint": "新任务",
   "noTasksYet": "暂无任务。",
+  "archivedTasks": "已归档任务",
+  "archiveTask": "归档",
+  "unarchiveTask": "恢复",
+  "deleteTask": "删除",
   "pomodorosCount": "{n,plural, =0{无番茄}other{{n} 个番茄}}",
 
   "today": "今天",
@@ -64,6 +68,10 @@
   "sessionEndedEarly": "提前结束",
   "sessionCompleted": "已完成",
   "sessionUntitled": "专注",
+  "flowBloomTitle": "专注完成",
+  "flowBloomBody": "你保持了一次单点专注。",
+  "sessionSummaryFocusTime": "专注时长：{duration}",
+  "continueToBreak": "进入休息",
 
   "sectionTimer": "计时器",
   "sectionExperience": "体验",

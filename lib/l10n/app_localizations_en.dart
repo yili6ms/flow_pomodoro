@@ -133,6 +133,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noTasksYet => 'No tasks yet.';
 
   @override
+  String get archivedTasks => 'Archived tasks';
+
+  @override
+  String get archiveTask => 'Archive';
+
+  @override
+  String get unarchiveTask => 'Restore';
+
+  @override
+  String get deleteTask => 'Delete';
+
+  @override
   String pomodorosCount(int n) {
     String _temp0 = intl.Intl.pluralLogic(
       n,
@@ -201,6 +213,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sessionUntitled => 'Focus';
+
+  @override
+  String get flowBloomTitle => 'Flow complete';
+
+  @override
+  String get flowBloomBody => 'You stayed with one thing.';
+
+  @override
+  String sessionSummaryFocusTime(String duration) {
+    return 'Focus time: $duration';
+  }
+
+  @override
+  String get continueToBreak => 'Continue to break';
 
   @override
   String get sectionTimer => 'Timer';

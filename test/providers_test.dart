@@ -144,6 +144,26 @@ void main() {
       expect(p.activeTasks, isEmpty);
     });
 
+    test('archiveTask hides task and clears active selection', () async {
+      final p = TaskProvider();
+      await p.load();
+      final a = await p.addTask('A');
+      await p.archiveTask(a.id);
+      expect(p.activeTaskId, null);
+      expect(p.activeTasks, isEmpty);
+      expect(p.archivedTasks.single.id, a.id);
+    });
+
+    test('unarchiveTask restores task to active list', () async {
+      final p = TaskProvider();
+      await p.load();
+      final a = await p.addTask('A');
+      await p.archiveTask(a.id);
+      await p.unarchiveTask(a.id);
+      expect(p.activeTasks.single.id, a.id);
+      expect(p.archivedTasks, isEmpty);
+    });
+
     test('incrementPomodoro increases count', () async {
       final p = TaskProvider();
       await p.load();

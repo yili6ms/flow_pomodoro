@@ -132,6 +132,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noTasksYet => '暂无任务。';
 
   @override
+  String get archivedTasks => '已归档任务';
+
+  @override
+  String get archiveTask => '归档';
+
+  @override
+  String get unarchiveTask => '恢复';
+
+  @override
+  String get deleteTask => '删除';
+
+  @override
   String pomodorosCount(int n) {
     String _temp0 = intl.Intl.pluralLogic(
       n,
@@ -198,6 +210,20 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sessionUntitled => '专注';
+
+  @override
+  String get flowBloomTitle => '专注完成';
+
+  @override
+  String get flowBloomBody => '你保持了一次单点专注。';
+
+  @override
+  String sessionSummaryFocusTime(String duration) {
+    return '专注时长：$duration';
+  }
+
+  @override
+  String get continueToBreak => '进入休息';
 
   @override
   String get sectionTimer => '计时器';

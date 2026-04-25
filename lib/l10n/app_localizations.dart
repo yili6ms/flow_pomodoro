@@ -332,6 +332,30 @@ abstract class AppLocalizations {
   /// **'No tasks yet.'**
   String get noTasksYet;
 
+  /// No description provided for @archivedTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Archived tasks'**
+  String get archivedTasks;
+
+  /// No description provided for @archiveTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive'**
+  String get archiveTask;
+
+  /// No description provided for @unarchiveTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get unarchiveTask;
+
+  /// No description provided for @deleteTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get deleteTask;
+
   /// No description provided for @pomodorosCount.
   ///
   /// In en, this message translates to:
@@ -439,6 +463,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Focus'**
   String get sessionUntitled;
+
+  /// No description provided for @flowBloomTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Flow complete'**
+  String get flowBloomTitle;
+
+  /// No description provided for @flowBloomBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You stayed with one thing.'**
+  String get flowBloomBody;
+
+  /// No description provided for @sessionSummaryFocusTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus time: {duration}'**
+  String sessionSummaryFocusTime(String duration);
+
+  /// No description provided for @continueToBreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue to break'**
+  String get continueToBreak;
 
   /// No description provided for @sectionTimer.
   ///
